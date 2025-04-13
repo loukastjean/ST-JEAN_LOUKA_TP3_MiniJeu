@@ -10,3 +10,6 @@ Ils peuvent sauter 2 fois.
 Plus ils sont endommagés, plus ils ont du knockback quand ils se font frapper.
 Ils ont 5 vies chaque.
 Quand ils sont éjectés du stage, ils perdent une vie.
+
+Voici le lien vers le plan Miro:
+https://miro.com/app/board/uXjVIDjqP1U=/?share_link_id=237772803973

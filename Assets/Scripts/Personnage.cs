@@ -19,6 +19,38 @@ public class Personnage : MonoBehaviour
     Vector2 positionFeet = new(-0.8f, -2.6f);
     float longueurFeet = 1.5f;
 
+    public GameObject prefabBullet;
+    
+    // Button south
+    void BS_onClicked()
+    {
+        Jump();
+    }
+
+    // Left stick
+    void LS_moved(Vector2 direction)
+    {
+        Move(direction);
+    }
+    
+    // Right stick
+    void RS_moved(Vector2 direction)
+    {
+        Debug.Log(direction);
+    }
+    
+    // Right trigger (in the future)
+    void RT_moved(float idk)
+    {
+        Debug.Log($"LS moved {idk}");
+    }
+
+    // Button east
+    void BE_onClicked()
+    {
+        Debug.Log("BE on clicked");
+    }
+
     // Start is called before the first frame update
     void Start()
     {
@@ -28,10 +60,22 @@ public class Personnage : MonoBehaviour
         inputReader = GetComponent<PlayerInputReader>();
         rb = GetComponent<Rigidbody2D>();
         
-        // S'abonner au input du clickage de bouton sud
-        inputReader.BS.callback += BS_onClicked;
+        // S'abonner aux inputs
+        SetInputs();
+    }
 
+    void SetInputs()
+    {
+        // Button south/W
+        inputReader.BS.callback += BS_onClicked;
+        // Left stick/WASD
         inputReader.LS_m.callback += LS_moved;
+        // Right trigger/NOTHING
+        inputReader.RT.callback += RT_moved;
+        // TEMPORARY
+        inputReader.BE.callback += BE_onClicked;
+        // Right stick/
+        inputReader.RS_m.callback += RS_moved;
     }
 
     void SetAttributes()
@@ -39,16 +83,6 @@ public class Personnage : MonoBehaviour
         mouvement = Vector2.zero;
         vitesse = 20;
         jumpForce = 35;
-    }
-
-    void BS_onClicked()
-    {
-        Jump();
-    }
-
-    void LS_moved(Vector2 direction)
-    {
-        Move(direction);
     }
 
     // Update is called once per frame

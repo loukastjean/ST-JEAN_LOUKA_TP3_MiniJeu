@@ -16,8 +16,8 @@ public class Personnage : MonoBehaviour
     
     Rigidbody2D rb;
 
-    Vector2 positionFeet = new(-0.8f, -2.6f);
-    float longueurFeet = 1.5f;
+    Vector2 feetPosition = new(-0.8f, -2.6f);
+    float feetWidth = 1.5f;
 
     public GameObject prefabBullet;
     
@@ -135,16 +135,14 @@ public class Personnage : MonoBehaviour
     bool IsGrounded()
     {
         // Fait une ligne en dessous des pieds et regarde si elle est en contact avec le sol
-        RaycastHit2D hit = Physics2D.Raycast(new Vector2(transform.position.x + positionFeet.x, transform.position.y + positionFeet.y), Vector2.right, longueurFeet, LayerMask.GetMask("Ground"));
+        RaycastHit2D hit = Physics2D.Raycast(new Vector2(transform.position.x + feetPosition.x, transform.position.y + feetPosition.y), Vector2.right, feetWidth, LayerMask.GetMask("Ground"));
         
         // Hitbox de pieds pour isgrounded
-        Debug.DrawRay(new Vector3(transform.position.x + positionFeet.x, transform.position.y + positionFeet.y),
-            Vector3.right * longueurFeet, Color.red, 5f);
+        Debug.DrawRay(new Vector3(transform.position.x + feetPosition.x, transform.position.y + feetPosition.y),
+            Vector3.right * feetWidth, Color.red, 5f);
         
         if (hit)
-        {
             return true;
-        }
         
         return false;
     }

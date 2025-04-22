@@ -6,6 +6,7 @@ public class Personnage : MonoBehaviour
 {
     // Référence au PlayerInputReader
     PlayerInputReader inputReader;
+    Animator animator;
     
     Vector2 mouvement;
 
@@ -13,13 +14,21 @@ public class Personnage : MonoBehaviour
 
     float jumpForce;
     int numberJumps;
+
+    float damage;
+    int lives;
     
     Rigidbody2D rb;
+    SpriteRenderer sr;
 
-    Vector2 feetPosition = new(-0.8f, -2.6f);
+    Vector2 feetPosition = new(-0.75f, -2.56f);
     float feetWidth = 1.5f;
+    
+    Vector2 respawnPosition = new(0, 10f);
 
     public GameObject prefabBullet;
+
+    bool previouslyGrounded = false;
     
     // Button south
     void BS_onClicked()
@@ -59,6 +68,8 @@ public class Personnage : MonoBehaviour
         // Assigner le PlayerInputReader
         inputReader = GetComponent<PlayerInputReader>();
         rb = GetComponent<Rigidbody2D>();
+        sr = GetComponent<SpriteRenderer>();
+        animator = GetComponent<Animator>();
         
         // S'abonner aux inputs
         SetInputs();
@@ -83,16 +94,40 @@ public class Personnage : MonoBehaviour
         mouvement = Vector2.zero;
         vitesse = 20;
         jumpForce = 35;
+        
+        damage = 0;
+        lives = 5;
+    }
+
+    void Update()
+    {
+        if (ExitedField())
+        {
+            Respawn();
+        }
     }
 
     // Update is called once per frame
     void FixedUpdate()
     {
-        if (IsGrounded() && rb.velocity.magnitude < 0.1f)
+        if (IsGrounded() && rb.velocity.y == 0)
+        {
+            // Si il est au sol, il reprend ses 2 sauts
             numberJumps = 0;
+            
+            // Si il n'etait pas deja a terre
+            if (!previouslyGrounded)
+            {
+                animator.SetTrigger("endJumping");
+            }
+        }
+            
         
         transform.Translate(mouvement * (vitesse * Time.deltaTime));
         //rb.MovePosition(rb.position + mouvement * vitesse);
+        
+        previouslyGrounded = IsGrounded();
+        
     }
 
     void Jump()
@@ -104,7 +139,7 @@ public class Personnage : MonoBehaviour
         // Incrementer le nombre de jumps qu'il fait
         numberJumps++;
         
-        Debug.Log(numberJumps);
+        animator.SetTrigger("startJumping");
         
         // Faire que peu importe sa velocite, il saute la meme hauteur
         rb.velocity = new Vector2(rb.velocity.x, 0);
@@ -127,9 +162,45 @@ public class Personnage : MonoBehaviour
             direction.y *= 1.3f;
         else
             direction.y = 0;
-        
+
+        // Si il bouge en X, le faire marcher
+        if (Mathf.Abs(direction.x) > 0f)
+        {
+            animator.SetBool("isWalking", true);
+            
+            // Si la direction est < 0, donc a guche, flip le sprite
+            sr.flipX = direction.x < 0f;
+        }
+        else
+            animator.SetBool("isWalking", false);
         
         mouvement = direction;
+    }
+
+    void Respawn()
+    {
+        rb.velocity = Vector2.zero;
+        transform.position = respawnPosition;
+    }
+
+    public void SubirDegats(float degats, Vector2 direction)
+    {
+        damage -= degats;
+        
+        rb.AddForce(direction.normalized * (degats * 0.1f), ForceMode2D.Impulse);
+    }
+
+    bool ExitedField()
+    {
+        // Si il part trop d'un bord ou de l'autre du terrain en X OU Si il tombe trop bas
+        if (Mathf.Abs(transform.position.x) > 40f || transform.position.y < -20f)
+        {
+            lives--;
+            return true;
+        }
+        
+        return false;
+        
     }
 
     bool IsGrounded()
@@ -137,13 +208,10 @@ public class Personnage : MonoBehaviour
         // Fait une ligne en dessous des pieds et regarde si elle est en contact avec le sol
         RaycastHit2D hit = Physics2D.Raycast(new Vector2(transform.position.x + feetPosition.x, transform.position.y + feetPosition.y), Vector2.right, feetWidth, LayerMask.GetMask("Ground"));
         
-        // Hitbox de pieds pour isgrounded
+        // Hitbox de pieds pour isgrounded DEBUG
         Debug.DrawRay(new Vector3(transform.position.x + feetPosition.x, transform.position.y + feetPosition.y),
             Vector3.right * feetWidth, Color.red, 5f);
-        
-        if (hit)
-            return true;
-        
-        return false;
+
+        return hit;
     }
 }

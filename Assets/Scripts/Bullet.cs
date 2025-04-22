@@ -6,27 +6,34 @@ public class Bullet : MonoBehaviour
 {
     float vitesse;
     float degats;
-    Vector2 destination;
+    Vector2 movement;
+
+    Personnage creator;
+    
+    MeshRenderer renderer;
+    
     
     
     // Start is called before the first frame update
     void Start()
     {
-        
+        renderer = GetComponent<MeshRenderer>();
     }
 
-    public void SetAttributes(Vector2 _destination)
+    public void SetAttributes(Vector2 destination, Personnage personnage)
     {
         vitesse = 4f;
         degats = 10f;
-        destination = _destination;
+        
+        movement = destination.normalized;
+        creator = personnage;
     }
 
     // Update is called once per frame
     void Update()
     {
         // Mauvaise logique, juste pour tester
-        if (Vector2.Distance(transform.position, destination) < vitesse)
+        if (TouchedEnemy())
         {
             OnContact();
         }
@@ -39,13 +46,38 @@ public class Bullet : MonoBehaviour
 
     void Move()
     {
-        transform.Translate(new Vector2(destination.x - transform.position.x, destination.y - transform.position.y).normalized * vitesse);
+        transform.Translate(new Vector2(transform.position.x + movement.x, transform.position.y + movement.y).normalized * vitesse);
+    }
+
+    bool TouchedEnemy()
+    {
+        return EnnemiesInContact().Count > 0;
     }
 
     void OnContact()
     {
+        // Faire du dommage à l'ennemi
+        foreach (var enemy in EnnemiesInContact())
+            enemy.SubirDegats(degats, movement);
+        
         // Pour l'instant
         Destroy(gameObject);
+    }
+
+    List<Personnage> EnnemiesInContact()
+    {
+        var personnages = new List<Personnage>();
+        
+        // Get les colliders qui sont pres 
+        var colliders = Physics2D.OverlapCircleAll(transform.position, renderer.bounds.extents.x);
+        
+        // Vérifie chaque collider pour savoir s'il s'agit d'une unité
+        foreach (var collider in colliders)
+            if (collider.TryGetComponent(out Personnage personnage))
+                if (personnage != creator)
+                    personnages.Add(personnage);
+        
+        return personnages;
     }
     
 }

@@ -13,7 +13,7 @@ public class Personnage : MonoBehaviour
     [SerializeField] float vitesse;
 
     [SerializeField] float jumpForce;
-    int numberJumps;
+    [SerializeField] int numberJumps;
 
     [SerializeField] float damage;
     [SerializeField] int lives;
@@ -34,37 +34,23 @@ public class Personnage : MonoBehaviour
 
     bool wantsToShoot;
     [SerializeField] bool canJumpWithStick;
-    
-    // Button south
-    void BS_onClicked()
-    {
-        Jump();
-    }
 
     // Left stick
     void LS_moved(Vector2 direction)
     {
-        Debug.Log($"RT moved {direction}");
-        
         Move(direction);
     }
     
     // Right stick
     void RS_moved(Vector2 direction)
     {
-        Debug.Log("La direction de RS est " + direction);
-
         if (direction != Vector2.zero)
             aim = direction;
-        
-        
     }
     
     // Right trigger (in the future)
     void RT_onClicked()
     {
-        Debug.Log("RT clicked");
-        
         wantsToShoot = true;
     }
 
@@ -95,8 +81,6 @@ public class Personnage : MonoBehaviour
 
     void SetInputs()
     {
-        // Button south/W
-        inputReader.BS.callback += BS_onClicked;
         // Left stick/WASD
         inputReader.LS_m.callback += LS_moved;
         // Right trigger/NOTHING
@@ -168,6 +152,7 @@ public class Personnage : MonoBehaviour
 
     void Move(Vector2 direction)
     {
+        // Si il est en dessous du trigger de saut
         if (!canJumpWithStick && direction.y < 0.3f)
             canJumpWithStick = true;
         
@@ -180,6 +165,7 @@ public class Personnage : MonoBehaviour
             rb.gravityScale = 12f;
         }
 
+        // Si il saute avec le stick
         if (direction.y > 0.3f && canJumpWithStick)
         {
             canJumpWithStick = false;

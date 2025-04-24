@@ -79,18 +79,18 @@
                 },
                 {
                     "name": "LT",
-                    "type": "Value",
+                    "type": "Button",
                     "id": "df5bbee7-0b4c-4571-add7-540a9ed4775d",
-                    "expectedControlType": "Axis",
+                    "expectedControlType": "Button",
                     "processors": "AxisDeadzone",
                     "interactions": "",
                     "initialStateCheck": true
                 },
                 {
                     "name": "RT",
-                    "type": "Value",
+                    "type": "Button",
                     "id": "1e4149db-c3fe-430f-bf7a-ad58df1e0d99",
-                    "expectedControlType": "Axis",
+                    "expectedControlType": "Button",
                     "processors": "AxisDeadzone",
                     "interactions": "",
                     "initialStateCheck": true
@@ -100,7 +100,7 @@
                     "type": "PassThrough",
                     "id": "153a100c-55e4-47ea-9e0f-caeef60269cb",
                     "expectedControlType": "Vector2",
-                    "processors": "StickDeadzone(min=0.5)",
+                    "processors": "StickDeadzone",
                     "interactions": "",
                     "initialStateCheck": true
                 },
@@ -109,9 +109,9 @@
                     "type": "PassThrough",
                     "id": "d169e067-6086-4908-87b5-c67d2f1999a4",
                     "expectedControlType": "Vector2",
-                    "processors": "NormalizeVector2,StickDeadzone",
+                    "processors": "StickDeadzone",
                     "interactions": "",
-                    "initialStateCheck": false
+                    "initialStateCheck": true
                 },
                 {
                     "name": "LS_b",

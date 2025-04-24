@@ -59,8 +59,8 @@ public class PlayerInputReader : MonoBehaviour
     public InputEvent RB = new InputEvent();
 
     // Triggers
-    public InputEvent_axis LT = new InputEvent_axis();
-    public InputEvent_axis RT = new InputEvent_axis();
+    public InputEvent LT = new InputEvent();
+    public InputEvent RT = new InputEvent();
 
     // Sticks (Movement)
     public InputEvent_vector2 LS_m = new InputEvent_vector2();

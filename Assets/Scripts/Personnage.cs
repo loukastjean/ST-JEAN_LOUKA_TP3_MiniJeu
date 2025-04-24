@@ -10,13 +10,13 @@ public class Personnage : MonoBehaviour
     
     Vector2 mouvement;
 
-    float vitesse;
+    [SerializeField] float vitesse;
 
-    float jumpForce;
+    [SerializeField] float jumpForce;
     int numberJumps;
 
-    float damage;
-    int lives;
+    [SerializeField] float damage;
+    [SerializeField] int lives;
     
     Rigidbody2D rb;
     SpriteRenderer sr;
@@ -29,6 +29,11 @@ public class Personnage : MonoBehaviour
     public GameObject prefabBullet;
 
     bool previouslyGrounded = false;
+    Vector2 aim = Vector2.zero;
+    float lastShotTime;
+
+    bool wantsToShoot;
+    [SerializeField] bool canJumpWithStick;
     
     // Button south
     void BS_onClicked()
@@ -39,19 +44,28 @@ public class Personnage : MonoBehaviour
     // Left stick
     void LS_moved(Vector2 direction)
     {
+        Debug.Log($"RT moved {direction}");
+        
         Move(direction);
     }
     
     // Right stick
     void RS_moved(Vector2 direction)
     {
-        Debug.Log(direction);
+        Debug.Log("La direction de RS est " + direction);
+
+        if (direction != Vector2.zero)
+            aim = direction;
+        
+        
     }
     
     // Right trigger (in the future)
-    void RT_moved(float idk)
+    void RT_onClicked()
     {
-        Debug.Log($"LS moved {idk}");
+        Debug.Log("RT clicked");
+        
+        wantsToShoot = true;
     }
 
     // Button east
@@ -64,6 +78,10 @@ public class Personnage : MonoBehaviour
     void Start()
     {
         SetAttributes();
+        
+        lastShotTime = 0f;
+        wantsToShoot = false;
+        canJumpWithStick = true;
         
         // Assigner le PlayerInputReader
         inputReader = GetComponent<PlayerInputReader>();
@@ -82,7 +100,7 @@ public class Personnage : MonoBehaviour
         // Left stick/WASD
         inputReader.LS_m.callback += LS_moved;
         // Right trigger/NOTHING
-        inputReader.RT.callback += RT_moved;
+        inputReader.RT.callback += RT_onClicked;
         // TEMPORARY
         inputReader.BE.callback += BE_onClicked;
         // Right stick/
@@ -102,9 +120,10 @@ public class Personnage : MonoBehaviour
     void Update()
     {
         if (ExitedField())
-        {
             Respawn();
-        }
+        
+        if (wantsToShoot)
+            Shoot(aim);
     }
 
     // Update is called once per frame
@@ -123,8 +142,9 @@ public class Personnage : MonoBehaviour
         }
             
         
-        transform.Translate(mouvement * (vitesse * Time.deltaTime));
-        //rb.MovePosition(rb.position + mouvement * vitesse);
+        transform.Translate(mouvement * vitesse * Time.fixedDeltaTime);
+        //rb.MovePosition(rb.position + mouvement * vitesse * Time.fixedDeltaTime);
+        //rb.AddForce(mouvement * vitesse * Time.fixedDeltaTime, ForceMode2D.Impulse);
         
         previouslyGrounded = IsGrounded();
         
@@ -148,6 +168,9 @@ public class Personnage : MonoBehaviour
 
     void Move(Vector2 direction)
     {
+        if (!canJumpWithStick && direction.y < 0.3f)
+            canJumpWithStick = true;
+        
         if (rb.velocity.y > 0)
         {
             rb.gravityScale = 7f;
@@ -157,11 +180,18 @@ public class Personnage : MonoBehaviour
             rb.gravityScale = 12f;
         }
 
+        if (direction.y > 0.3f && canJumpWithStick)
+        {
+            canJumpWithStick = false;
+            Jump();
+        }
+
         // Juste laisser le fastfall
-        if (direction.y < 0 && !IsGrounded())
+        if (direction.y < 0f && !IsGrounded())
             direction.y *= 1.3f;
         else
             direction.y = 0;
+            
 
         // Si il bouge en X, le faire marcher
         if (Mathf.Abs(direction.x) > 0f)
@@ -185,9 +215,25 @@ public class Personnage : MonoBehaviour
 
     public void SubirDegats(float degats, Vector2 direction)
     {
-        damage -= degats;
+        damage += degats;
         
-        rb.AddForce(direction.normalized * (degats * 0.1f), ForceMode2D.Impulse);
+        rb.AddForce(direction.normalized * damage * 0.1f, ForceMode2D.Impulse);
+    }
+
+    void Shoot(Vector2 direction)
+    {
+        if (direction == Vector2.zero || Time.time - lastShotTime < 0.8f)
+            return;
+            
+        Bullet bullet = Instantiate(prefabBullet, transform.position, Quaternion.identity).GetComponent<Bullet>();
+        
+        Debug.Log(direction);
+        
+        bullet.SetAttributes(direction, transform.position, this);
+        
+        lastShotTime = Time.time;
+        wantsToShoot = false;
+        
     }
 
     bool ExitedField()

@@ -10,21 +10,22 @@ public class Bullet : MonoBehaviour
 
     Personnage creator;
     
-    MeshRenderer renderer;
+    SpriteRenderer renderer;
     
     
     
     // Start is called before the first frame update
     void Start()
     {
-        renderer = GetComponent<MeshRenderer>();
+        renderer = GetComponent<SpriteRenderer>();
     }
 
-    public void SetAttributes(Vector2 destination, Personnage personnage)
+    public void SetAttributes(Vector2 destination, Vector2 position, Personnage personnage)
     {
-        vitesse = 4f;
+        vitesse = 25f;
         degats = 10f;
         
+        transform.position = position;
         movement = destination.normalized;
         creator = personnage;
     }
@@ -37,6 +38,9 @@ public class Bullet : MonoBehaviour
         {
             OnContact();
         }
+        
+        if (ExitedField())
+            Destroy(gameObject);
     }
 
     void FixedUpdate()
@@ -46,7 +50,7 @@ public class Bullet : MonoBehaviour
 
     void Move()
     {
-        transform.Translate(new Vector2(transform.position.x + movement.x, transform.position.y + movement.y).normalized * vitesse);
+        transform.Translate(movement * (vitesse * Time.fixedDeltaTime));
     }
 
     bool TouchedEnemy()
@@ -80,4 +84,9 @@ public class Bullet : MonoBehaviour
         return personnages;
     }
     
+    bool ExitedField()
+    {
+        // Si il part trop d'un bord ou de l'autre du terrain en X OU Si il tombe trop bas
+        return Mathf.Abs(transform.position.x) > 40f || transform.position.y < -20f;
+    }
 }

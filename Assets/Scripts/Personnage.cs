@@ -216,7 +216,7 @@ public class Personnage : MonoBehaviour
         if (direction.y < 0f && IsGrounded())
             direction.x *= 2f;
         
-        rb.AddForce((direction.normalized * (damage/100 + 40f)), ForceMode2D.Impulse);
+        rb.AddForce((direction.normalized * (damage/3 + 40f)), ForceMode2D.Impulse);
     }
 
     void Shoot(Vector2 direction)

@@ -79,20 +79,20 @@
                 },
                 {
                     "name": "LT",
-                    "type": "Button",
+                    "type": "PassThrough",
                     "id": "df5bbee7-0b4c-4571-add7-540a9ed4775d",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "Axis",
                     "processors": "AxisDeadzone",
-                    "interactions": "",
+                    "interactions": "Press(behavior=2)",
                     "initialStateCheck": true
                 },
                 {
                     "name": "RT",
-                    "type": "Button",
+                    "type": "PassThrough",
                     "id": "1e4149db-c3fe-430f-bf7a-ad58df1e0d99",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "Axis",
                     "processors": "AxisDeadzone",
-                    "interactions": "",
+                    "interactions": "Press(behavior=2)",
                     "initialStateCheck": true
                 },
                 {

@@ -32,8 +32,9 @@ public class Personnage : MonoBehaviour
     Vector2 aim = Vector2.zero;
     float lastShotTime;
 
-    bool wantsToShoot;
     [SerializeField] bool canJumpWithStick;
+    bool wantsToShoot;
+    
 
     // Left stick
     void LS_moved(Vector2 direction)
@@ -49,11 +50,13 @@ public class Personnage : MonoBehaviour
     }
     
     // Right trigger (in the future)
-    void RT_onClicked()
+    void RT_moved(float press)
     {
-        wantsToShoot = true;
+        Debug.Log("Clicked");
+        
+        wantsToShoot = press > 0.4f;
     }
-
+    
     // Button east
     void BE_onClicked()
     {
@@ -84,7 +87,7 @@ public class Personnage : MonoBehaviour
         // Left stick/WASD
         inputReader.LS_m.callback += LS_moved;
         // Right trigger/NOTHING
-        inputReader.RT.callback += RT_onClicked;
+        inputReader.RT.callback += RT_moved;
         // TEMPORARY
         inputReader.BE.callback += BE_onClicked;
         // Right stick/
@@ -127,11 +130,18 @@ public class Personnage : MonoBehaviour
             
         
         transform.Translate(mouvement * vitesse * Time.fixedDeltaTime);
+        
+        // Pour ajouter de la velocite au rigidbody seulement quand il veut bouger en sens inverse de ou il va
+        // Verifier donc si le decplacement est contraire a la velocite
+        if ((mouvement.x > 0 && rb.velocity.x < 0) || (mouvement.x < 0 && rb.velocity.x > 0))
+            rb.velocity += new Vector2(mouvement.x * vitesse * Time.fixedDeltaTime * 5f, 0);
+        
+        Debug.Log(rb.velocity);
+        Debug.DrawRay(transform.position, rb.velocity, Color.red, 2f);
         //rb.MovePosition(rb.position + mouvement * vitesse * Time.fixedDeltaTime);
         //rb.AddForce(mouvement * vitesse * Time.fixedDeltaTime, ForceMode2D.Impulse);
         
         previouslyGrounded = IsGrounded();
-        
     }
 
     void Jump()
@@ -147,7 +157,8 @@ public class Personnage : MonoBehaviour
         
         // Faire que peu importe sa velocite, il saute la meme hauteur
         rb.velocity = new Vector2(rb.velocity.x, 0);
-        rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
+        // Sauter un peu vers la direction du joystick ou on veut aller
+        rb.AddForce((Vector2.up + mouvement * 0.1f).normalized * jumpForce, ForceMode2D.Impulse);
     }
 
     void Move(Vector2 direction)
@@ -157,16 +168,13 @@ public class Personnage : MonoBehaviour
             canJumpWithStick = true;
         
         if (rb.velocity.y > 0)
-        {
             rb.gravityScale = 7f;
-        }
+        
         else
-        {
             rb.gravityScale = 12f;
-        }
 
         // Si il saute avec le stick
-        if (direction.y > 0.3f && canJumpWithStick)
+        if (direction.y > 0.7f && canJumpWithStick)
         {
             canJumpWithStick = false;
             Jump();
@@ -196,6 +204,8 @@ public class Personnage : MonoBehaviour
     void Respawn()
     {
         rb.velocity = Vector2.zero;
+        damage = 0f;
+        lives--;
         transform.position = respawnPosition;
     }
 
@@ -203,7 +213,10 @@ public class Personnage : MonoBehaviour
     {
         damage += degats;
         
-        rb.AddForce(direction.normalized * damage * 0.1f, ForceMode2D.Impulse);
+        if (direction.y < 0f && IsGrounded())
+            direction.x *= 2f;
+        
+        rb.AddForce((direction.normalized * (damage/100 + 40f)), ForceMode2D.Impulse);
     }
 
     void Shoot(Vector2 direction)
@@ -213,13 +226,9 @@ public class Personnage : MonoBehaviour
             
         Bullet bullet = Instantiate(prefabBullet, transform.position, Quaternion.identity).GetComponent<Bullet>();
         
-        Debug.Log(direction);
-        
         bullet.SetAttributes(direction, transform.position, this);
         
         lastShotTime = Time.time;
-        wantsToShoot = false;
-        
     }
 
     bool ExitedField()
@@ -241,8 +250,7 @@ public class Personnage : MonoBehaviour
         RaycastHit2D hit = Physics2D.Raycast(new Vector2(transform.position.x + feetPosition.x, transform.position.y + feetPosition.y), Vector2.right, feetWidth, LayerMask.GetMask("Ground"));
         
         // Hitbox de pieds pour isgrounded DEBUG
-        Debug.DrawRay(new Vector3(transform.position.x + feetPosition.x, transform.position.y + feetPosition.y),
-            Vector3.right * feetWidth, Color.red, 5f);
+        //Debug.DrawRay(new Vector3(transform.position.x + feetPosition.x, transform.position.y + feetPosition.y), Vector3.right * feetWidth, Color.red, 5f);
 
         return hit;
     }

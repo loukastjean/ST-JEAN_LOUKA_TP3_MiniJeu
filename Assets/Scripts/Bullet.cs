@@ -4,25 +4,25 @@ using UnityEngine;
 
 public class Bullet : MonoBehaviour
 {
-    float vitesse;
+    [SerializeField] float vitesse;
     float degats;
     Vector2 movement;
 
     Personnage creator;
     
-    SpriteRenderer renderer;
+    SpriteRenderer rend;
     
     
     
     // Start is called before the first frame update
     void Start()
     {
-        renderer = GetComponent<SpriteRenderer>();
+        rend = GetComponent<SpriteRenderer>();
     }
 
     public void SetAttributes(Vector2 destination, Vector2 position, Personnage personnage)
     {
-        vitesse = 25f;
+        vitesse = 40f;
         degats = 10f;
         
         transform.position = position;
@@ -73,7 +73,7 @@ public class Bullet : MonoBehaviour
         var personnages = new List<Personnage>();
         
         // Get les colliders qui sont pres 
-        var colliders = Physics2D.OverlapCircleAll(transform.position, renderer.bounds.extents.x);
+        var colliders = Physics2D.OverlapCircleAll(transform.position, rend.bounds.extents.x);
         
         // Vérifie chaque collider pour savoir s'il s'agit d'une unité
         foreach (var collider in colliders)

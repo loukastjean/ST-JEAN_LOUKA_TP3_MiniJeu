@@ -15,6 +15,8 @@ public class Personnage : MonoBehaviour
     [SerializeField] float jumpForce;
     [SerializeField] int numberJumps;
 
+    [SerializeReference] float dashForce;
+
     [SerializeField] float damage;
     [SerializeField] int lives;
     
@@ -31,6 +33,7 @@ public class Personnage : MonoBehaviour
     bool previouslyGrounded = false;
     Vector2 aim = Vector2.zero;
     float lastShotTime;
+    float lastDashTime;
 
     [SerializeField] bool canJumpWithStick;
     bool wantsToShoot;
@@ -49,29 +52,21 @@ public class Personnage : MonoBehaviour
             aim = direction;
     }
     
-    // Right trigger (in the future)
+    // Right trigger
     void RT_moved(float press)
     {
-        Debug.Log("Clicked");
-        
         wantsToShoot = press > 0.4f;
     }
     
     // Button east
     void BE_onClicked()
     {
-        Debug.Log("BE on clicked");
+        Dash();
     }
 
     // Start is called before the first frame update
     void Start()
     {
-        SetAttributes();
-        
-        lastShotTime = 0f;
-        wantsToShoot = false;
-        canJumpWithStick = true;
-        
         // Assigner le PlayerInputReader
         inputReader = GetComponent<PlayerInputReader>();
         rb = GetComponent<Rigidbody2D>();
@@ -80,6 +75,8 @@ public class Personnage : MonoBehaviour
         
         // S'abonner aux inputs
         SetInputs();
+        
+        SetAttributes();
     }
 
     void SetInputs()
@@ -94,13 +91,28 @@ public class Personnage : MonoBehaviour
         inputReader.RS_m.callback += RS_moved;
     }
 
+    void SpawnAttributes()
+    {
+        lastShotTime = -99f;
+        lastDashTime = -99f;
+        wantsToShoot = false;
+        canJumpWithStick = true;
+        numberJumps = 0;
+        
+        mouvement = Vector2.zero;
+        rb.velocity = Vector2.zero;
+        
+        damage = 0f;
+    }
+
     void SetAttributes()
     {
-        mouvement = Vector2.zero;
-        vitesse = 20;
-        jumpForce = 35;
+        SpawnAttributes();
         
-        damage = 0;
+        vitesse = 20f;
+        jumpForce = 35f;
+        dashForce = 30f;
+
         lives = 5;
     }
 
@@ -160,6 +172,21 @@ public class Personnage : MonoBehaviour
         rb.AddForce((Vector2.up + mouvement * 0.1f).normalized * jumpForce, ForceMode2D.Impulse);
     }
 
+    void Dash()
+    {
+        if (Time.time < lastDashTime + 5f)
+            return;
+
+        if (sr.flipX)
+            rb.AddForce((Vector2.left + mouvement * 0.1f).normalized * dashForce, ForceMode2D.Impulse);
+        else
+            rb.AddForce((Vector2.right + mouvement * 0.1f).normalized * dashForce, ForceMode2D.Impulse);
+        
+        Debug.Log(rb.velocity);
+
+        lastDashTime = Time.time;
+    }
+
     void Move(Vector2 direction)
     {
         // Si il est en dessous du trigger de saut
@@ -191,7 +218,7 @@ public class Personnage : MonoBehaviour
         {
             animator.SetBool("isWalking", true);
             
-            // Si la direction est < 0, donc a guche, flip le sprite
+            // Si la direction est < 0, donc a gauche, flip le sprite
             sr.flipX = direction.x < 0f;
         }
         else
@@ -202,8 +229,8 @@ public class Personnage : MonoBehaviour
 
     void Respawn()
     {
-        rb.velocity = Vector2.zero;
-        damage = 0f;
+        SpawnAttributes();
+        
         lives--;
         transform.position = respawnPosition;
     }
@@ -215,7 +242,7 @@ public class Personnage : MonoBehaviour
         if (direction.y < 0f && IsGrounded())
             direction.x *= 2f;
         
-        rb.AddForce((direction.normalized * (damage/3 + 40f)), ForceMode2D.Impulse);
+        rb.AddForce(direction.normalized * (damage/3 + 40f), ForceMode2D.Impulse);
     }
 
     void Shoot(Vector2 direction)
@@ -233,7 +260,7 @@ public class Personnage : MonoBehaviour
     bool ExitedField()
     {
         // Si il part trop d'un bord ou de l'autre du terrain en X OU Si il tombe trop bas
-        if (Mathf.Abs(transform.position.x) > 40f || transform.position.y < -20f)
+        if (Mathf.Abs(transform.position.x) > 70f || transform.position.y < -30f)
         {
             lives--;
             return true;

@@ -150,7 +150,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6cb37ed7466644496a3dfe6dba364423, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  vitesse: 0
+  jumpForce: 0
+  numberJumps: 0
+  dashForce: 0
   prefabBullet: {fileID: 3939283812159402724, guid: 3cf0969ea0fb64c439f0bf682a0ae442, type: 3}
+  canJumpWithStick: 0
 --- !u!114 &-4328101020114064584
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -165,6 +170,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Actions: {fileID: -944628639613478452, guid: 100e2614f95ed4f42be4a1ae4e52a755, type: 3}
   m_NotificationBehavior: 0
+  m_UIInputModule: {fileID: 0}
   m_DeviceLostEvent:
     m_PersistentCalls:
       m_Calls: []
@@ -207,7 +213,7 @@ BoxCollider2D:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 1
   m_LayerOverridePriority: 0
   m_ForceSendLayers:
     serializedVersion: 2

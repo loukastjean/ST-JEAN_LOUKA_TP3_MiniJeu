@@ -17,8 +17,8 @@ public class Personnage : MonoBehaviour
 
     [SerializeReference] float dashForce;
 
-    [SerializeField] float damage;
-    [SerializeField] int lives;
+    public float damage { get; private set; }
+    public int lives { get; private set; }
     
     Rigidbody2D rb;
     SpriteRenderer sr;
@@ -123,11 +123,7 @@ public class Personnage : MonoBehaviour
         
         if (wantsToShoot)
             Shoot(aim);
-    }
-
-    // Update is called once per frame
-    void FixedUpdate()
-    {
+        
         if (IsGrounded() && rb.velocity.y == 0)
         {
             // Si il est au sol, il reprend ses 2 sauts
@@ -136,11 +132,18 @@ public class Personnage : MonoBehaviour
             // Si il n'etait pas deja a terre
             if (!previouslyGrounded)
             {
+                lastDashTime = -99f;
+                Debug.Log("DASH");
                 animator.SetTrigger("endJumping");
             }
         }
-            
         
+        previouslyGrounded = IsGrounded();
+    }
+
+    // Update is called once per frame
+    void FixedUpdate()
+    {
         transform.Translate(mouvement * vitesse * Time.fixedDeltaTime);
         
         // Pour ajouter de la velocite au rigidbody seulement quand il veut bouger en sens inverse de ou il va
@@ -151,8 +154,6 @@ public class Personnage : MonoBehaviour
         Debug.DrawRay(transform.position, rb.velocity, Color.red, 2f);
         //rb.MovePosition(rb.position + mouvement * vitesse * Time.fixedDeltaTime);
         //rb.AddForce(mouvement * vitesse * Time.fixedDeltaTime, ForceMode2D.Impulse);
-        
-        previouslyGrounded = IsGrounded();
     }
 
     void Jump()
@@ -174,7 +175,7 @@ public class Personnage : MonoBehaviour
 
     void Dash()
     {
-        if (Time.time < lastDashTime + 5f)
+        if (Time.time < lastDashTime + 3f)
             return;
 
         if (sr.flipX)
@@ -260,14 +261,7 @@ public class Personnage : MonoBehaviour
     bool ExitedField()
     {
         // Si il part trop d'un bord ou de l'autre du terrain en X OU Si il tombe trop bas
-        if (Mathf.Abs(transform.position.x) > 70f || transform.position.y < -30f)
-        {
-            lives--;
-            return true;
-        }
-        
-        return false;
-        
+        return Mathf.Abs(transform.position.x) > 70f || transform.position.y < -30f;
     }
 
     bool IsGrounded()

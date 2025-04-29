@@ -8,6 +8,8 @@ public class Personnage : MonoBehaviour
     PlayerInputReader inputReader;
     Animator animator;
     
+    UIManager uiManager;
+    
     Vector2 mouvement;
 
     [SerializeField] float vitesse;
@@ -64,6 +66,11 @@ public class Personnage : MonoBehaviour
         Dash();
     }
 
+    void Menu_OnClicked()
+    {
+        uiManager.Pause();
+    }
+
     // Start is called before the first frame update
     void Start()
     {
@@ -72,6 +79,7 @@ public class Personnage : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         sr = GetComponent<SpriteRenderer>();
         animator = GetComponent<Animator>();
+        uiManager = FindObjectOfType<UIManager>();
         
         // S'abonner aux inputs
         SetInputs();
@@ -89,6 +97,8 @@ public class Personnage : MonoBehaviour
         inputReader.BE.callback += BE_onClicked;
         // Right stick/
         inputReader.RS_m.callback += RS_moved;
+        // Menu (Pause)
+        inputReader.Menu.callback += Menu_OnClicked;
     }
 
     void SpawnAttributes()
@@ -133,7 +143,6 @@ public class Personnage : MonoBehaviour
             if (!previouslyGrounded)
             {
                 lastDashTime = -99f;
-                Debug.Log("DASH");
                 animator.SetTrigger("endJumping");
             }
         }
@@ -182,8 +191,6 @@ public class Personnage : MonoBehaviour
             rb.AddForce((Vector2.left + mouvement * 0.1f).normalized * dashForce, ForceMode2D.Impulse);
         else
             rb.AddForce((Vector2.right + mouvement * 0.1f).normalized * dashForce, ForceMode2D.Impulse);
-        
-        Debug.Log(rb.velocity);
 
         lastDashTime = Time.time;
     }

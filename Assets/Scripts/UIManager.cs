@@ -92,6 +92,9 @@ public class UIManager : MonoBehaviour
 
     public void Pause()
     {
+        Debug.Log(Time.timeScale);
+        
+        
         // Si en pause
         if (Time.timeScale == 0)
         {
@@ -99,8 +102,6 @@ public class UIManager : MonoBehaviour
             Debug.Log("Pause");
             Time.timeScale = 1;
         }
-
-
         else
         {
             PauseUI.SetActive(false); // Desactiver l'UI de pause

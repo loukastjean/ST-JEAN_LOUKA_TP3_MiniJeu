@@ -6,7 +6,8 @@ using UnityEngine;
 public class UIManager : MonoBehaviour
 {
     // UI
-    [SerializeField] TMP_Text player1Damage, player2Damage, player1Lives, player2Lives, timer;
+    [SerializeField] TMP_Text player1Damage, player2Damage, player1Lives, player2Lives, timer, gagnant;
+    [SerializeField] GameObject InGameUI, PauseUI,GameOverUI;
     
     Personnage player1, player2;
     
@@ -35,9 +36,12 @@ public class UIManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Update_Timer();
-        Update_Damage();
-        Update_Lives();
+        if (!VerifyGameOver())
+        {
+            Update_Timer();
+            Update_Damage();
+            Update_Lives();
+        }
     }
 
     void Update_Timer()
@@ -61,6 +65,47 @@ public class UIManager : MonoBehaviour
         player1Lives.text = $"{player1.lives} vies";
         player2Lives.text = $"{player2.lives} vies";
     }
-    
-    
+
+    bool VerifyGameOver()
+    {
+        // Vérifier si un des 2 joueurs a perdu
+        if (player1.lives <= 0 || player2.lives <= 0)
+        {
+            //InGameUI.SetActive(false); // Désactiver l'UI en jeu
+            GameOverUI.SetActive(true); // Activer l'UI de fin de jeu
+            
+            gagnant.text = "Gagnant: Joueur de ";
+
+            // Afficher le gagnant et le perdant pour chaque équipe
+            if (player1.lives <= 0)
+                gagnant.text += "Droite";
+            else
+                gagnant.text += "Gauche";
+
+            Update_Damage();
+            Update_Lives();
+        }
+
+        return player1.lives <= 0 || player2.lives <= 0;
+    }
+
+
+    public void Pause()
+    {
+        // Si en pause
+        if (Time.timeScale == 0)
+        {
+            PauseUI.SetActive(true); // Activer l'UI de pause
+            Debug.Log("Pause");
+            Time.timeScale = 1;
+        }
+
+
+        else
+        {
+            PauseUI.SetActive(false); // Desactiver l'UI de pause
+            Debug.Log("Unpause");
+            Time.timeScale = 0;
+        }
+    }
 }

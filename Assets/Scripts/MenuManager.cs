@@ -15,11 +15,13 @@ public class MenuManager : MonoBehaviour
     
     [SerializeField] Button btnPlay, btnSettings, btnQuit, btnStartGame;
 
-    [SerializeField] GameObject MainMenu, CharacterSelectionMenu;
+    [SerializeField] GameObject MainMenu, CharacterSelectionMenu, InGameMenu;
     
     [SerializeField] List<Button> player1Characters, player2Characters;
     
     List<Button> buttons;
+
+    [SerializeField] List<GameObject> prefabs;
     
     // L'index des personnages selectionnes par les joueurs
     int player1IndexSelectedCharacter, player2IndexSelectedCharacter;
@@ -43,11 +45,6 @@ public class MenuManager : MonoBehaviour
     void Update()
     {
         
-    }
-
-    void Update_CharacterSelection()
-    {
-
     }
 
 
@@ -88,6 +85,8 @@ public class MenuManager : MonoBehaviour
         // Juste pour faire sur, desactiver playerselectionet enable MainMenu
         CharacterSelectionMenu.SetActive(true);
         MainMenu.SetActive(false);
+        
+        SetButtonColors();
     }
     
     void LoadMainMenu()
@@ -121,42 +120,66 @@ public class MenuManager : MonoBehaviour
 
     void StartGame()
     {
-        SceneManager.LoadScene("MiniJeu");
+        // Instancier joueur 1
+        Personnage player1 = Instantiate(
+            prefabs[player1IndexSelectedCharacter],
+            new Vector2(-8, 1),
+            Quaternion.identity
+        ).GetComponent<Personnage>();
+        
+        // Instancier joueur 2
+        Personnage player2 = Instantiate(
+            prefabs[player2IndexSelectedCharacter],
+            new Vector2(8, 1),
+            Quaternion.identity
+        ).GetComponent<Personnage>();
+
+        player1.Creation();
+        player2.Creation();
+        
+        InGameMenu.SetActive(true);
+        CharacterSelectionMenu.SetActive(false);
+        
+
     }
 
     void SelectCharacter1()
     {
-        Button btnCurrentlySelectedCharacter = eventSystem.currentSelectedGameObject.GetComponent<Button>();
-        player1IndexSelectedCharacter = player1Characters.IndexOf(btnCurrentlySelectedCharacter);
+        Button btnCurrentlySelectedCharacter1 = eventSystem.currentSelectedGameObject.GetComponent<Button>();
+        player1IndexSelectedCharacter = player1Characters.IndexOf(btnCurrentlySelectedCharacter1);
         
-        ResetButtonColors();
-        
-        btnCurrentlySelectedCharacter.image.color = Color.white;
+        SetButtonColors();
         
         Debug.Log("Player 1 selected: " + player1IndexSelectedCharacter);
     }
     
     void SelectCharacter2()
     {
-        Button btnCurrentlySelectedCharacter = eventSystem.currentSelectedGameObject.GetComponent<Button>();
-        player2IndexSelectedCharacter = player2Characters.IndexOf(btnCurrentlySelectedCharacter);
-
-        ResetButtonColors();
+        Button btnCurrentlySelectedCharacter2 = eventSystem.currentSelectedGameObject.GetComponent<Button>();
+        player2IndexSelectedCharacter = player2Characters.IndexOf(btnCurrentlySelectedCharacter2);
         
-        btnCurrentlySelectedCharacter.image.color = Color.white;
+        SetButtonColors();
         
         Debug.Log("Player 2 selected: " + player2IndexSelectedCharacter);
     }
 
-    void ResetButtonColors()
+    void SetButtonColors()
     {
         foreach (Button button in buttons)
         {
-            //button.image.color = new Color(171,171,171);
-            button.image.color = new Color(0, 0, 0);
-            //button.image.color = new Color(0, 0, 0);
-            Debug.Log("Vient de remettre bouton a gris");
+            if (button == player1Characters[player1IndexSelectedCharacter] ||
+                button == player2Characters[player2IndexSelectedCharacter])
+            {
+                var colors = button.colors;
+                colors.normalColor = new Color(1f, 1f , 1f);
+                button.colors = colors;
+            }
+            else
+            {
+                var colors = button.colors;
+                colors.normalColor = new Color(0.66f, 0.66f , 0.66f);
+                button.colors = colors;
+            }
         }
     }
-    
 }

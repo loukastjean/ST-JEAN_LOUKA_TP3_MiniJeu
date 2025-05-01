@@ -7,16 +7,29 @@ public class Camera : MonoBehaviour
     Personnage[] personnages = new Personnage[2];
     float vitesseCam;
     
+    [SerializeField] GameObject InGameMenu;
+
+    bool justAppeared;
+    
     // Start is called before the first frame update
     void Start()
     {
+        justAppeared = false;
         vitesseCam = 5f;
-        personnages = FindObjectsOfType<Personnage>();
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (!InGameMenu.activeSelf)
+            return;
+        
+        if (!justAppeared)
+        {
+            justAppeared = true;
+            personnages = FindObjectsOfType<Personnage>();
+        }
+        
         MoveCamera();
     }
 

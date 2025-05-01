@@ -10,11 +10,15 @@ public class UIManager : MonoBehaviour
     [SerializeField] GameObject InGameUI, PauseUI,GameOverUI;
     
     Personnage player1, player2;
+
+    MenuManager menu;
+
+    bool justAppeared;
     
     // Start is called before the first frame update
     void Start()
     {
-        SetPlayers();
+        justAppeared = false;
     }
 
     void SetPlayers()
@@ -36,6 +40,15 @@ public class UIManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (!InGameUI.activeSelf)
+            return;
+
+        if (!justAppeared)
+        {
+            justAppeared = true;
+            SetPlayers();
+        }
+        
         if (!VerifyGameOver())
         {
             Update_Timer();

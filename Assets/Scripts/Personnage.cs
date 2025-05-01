@@ -71,8 +71,8 @@ public class Personnage : MonoBehaviour
         uiManager.Pause();
     }
 
-    // Start is called before the first frame update
-    void Start()
+    
+    public void Creation()
     {
         // Assigner le PlayerInputReader
         inputReader = GetComponent<PlayerInputReader>();

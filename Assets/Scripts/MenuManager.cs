@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.UI;
@@ -9,25 +10,27 @@ using UnityEngine.SceneManagement;
 
 public class MenuManager : MonoBehaviour
 {
-    
-    PlayerInputReader inputReader;
     EventSystem eventSystem;
+    PlayerInputReader inputReader;
     
     [SerializeField] Button btnPlay, btnSettings, btnQuit, btnStartGame;
 
     [SerializeField] GameObject MainMenu, CharacterSelectionMenu;
     
-    [SerializeField] List<Button> buttons;
-
-    bool canSelect;
+    [SerializeField] List<Button> player1Characters, player2Characters;
+    
+    List<Button> buttons;
+    
+    // L'index des personnages selectionnes par les joueurs
+    int player1IndexSelectedCharacter, player2IndexSelectedCharacter;
     
     // Start is called before the first frame update
     void Start()
     {
-        eventSystem = EventSystem.current;
         inputReader = GetComponent<PlayerInputReader>();
+        eventSystem = EventSystem.current;
         
-        canSelect = true;
+        buttons = player1Characters.Concat(player2Characters).ToList();
         
         LoadMainMenu();
 
@@ -39,37 +42,12 @@ public class MenuManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Update_CharacterSelection();
+        
     }
 
     void Update_CharacterSelection()
     {
-        Button currentButton;
-        
-        try
-        {
-            GameObject currentGameObject = eventSystem.currentSelectedGameObject;
-            currentButton = currentGameObject.GetComponent<Button>();
-        }
-        catch
-        {
-            return;
-        }
-        
-        if (buttons.Contains(currentButton))
-        {
-            currentButton.GetComponent<Image>().color = Color.white;
 
-            foreach (var button in buttons)
-            {
-                // Enlever le gris sur les bonhommes pas selectionnes
-                if (button != currentButton)
-                {
-                    Debug.Log(button.name);
-                    button.GetComponent<Image>().color = new Color(171,171,171);
-                }
-            }
-        }
     }
 
 
@@ -81,6 +59,16 @@ public class MenuManager : MonoBehaviour
         btnSettings.onClick.AddListener(Settings);
         // Ajouter un listener sur btnQuitter
         btnQuit.onClick.AddListener(Quit);
+
+        foreach (Button btnCharacter in player1Characters)
+        {
+            btnCharacter.onClick.AddListener(SelectCharacter1);
+        }
+        
+        foreach (Button btnCharacter in player2Characters)
+        {
+            btnCharacter.onClick.AddListener(SelectCharacter2);
+        }
         
         btnStartGame.onClick.AddListener(StartGame);
     }
@@ -135,6 +123,40 @@ public class MenuManager : MonoBehaviour
     {
         SceneManager.LoadScene("MiniJeu");
     }
+
+    void SelectCharacter1()
+    {
+        Button btnCurrentlySelectedCharacter = eventSystem.currentSelectedGameObject.GetComponent<Button>();
+        player1IndexSelectedCharacter = player1Characters.IndexOf(btnCurrentlySelectedCharacter);
+        
+        ResetButtonColors();
+        
+        btnCurrentlySelectedCharacter.image.color = Color.white;
+        
+        Debug.Log("Player 1 selected: " + player1IndexSelectedCharacter);
+    }
     
+    void SelectCharacter2()
+    {
+        Button btnCurrentlySelectedCharacter = eventSystem.currentSelectedGameObject.GetComponent<Button>();
+        player2IndexSelectedCharacter = player2Characters.IndexOf(btnCurrentlySelectedCharacter);
+
+        ResetButtonColors();
+        
+        btnCurrentlySelectedCharacter.image.color = Color.white;
+        
+        Debug.Log("Player 2 selected: " + player2IndexSelectedCharacter);
+    }
+
+    void ResetButtonColors()
+    {
+        foreach (Button button in buttons)
+        {
+            //button.image.color = new Color(171,171,171);
+            button.image.color = new Color(0, 0, 0);
+            //button.image.color = new Color(0, 0, 0);
+            Debug.Log("Vient de remettre bouton a gris");
+        }
+    }
     
 }

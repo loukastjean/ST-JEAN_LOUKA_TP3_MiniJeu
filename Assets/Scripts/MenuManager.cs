@@ -11,7 +11,6 @@ using UnityEngine.SceneManagement;
 public class MenuManager : MonoBehaviour
 {
     EventSystem eventSystem;
-    PlayerInputReader inputReader;
     
     [SerializeField] Button btnPlay, btnSettings, btnQuit, btnStartGame;
 
@@ -29,7 +28,6 @@ public class MenuManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        inputReader = GetComponent<PlayerInputReader>();
         eventSystem = EventSystem.current;
         
         buttons = player1Characters.Concat(player2Characters).ToList();
@@ -37,8 +35,6 @@ public class MenuManager : MonoBehaviour
         LoadMainMenu();
 
         SetButtonEvents();
-
-        SetInputs();
     }
 
     // Update is called once per frame
@@ -68,13 +64,6 @@ public class MenuManager : MonoBehaviour
         }
         
         btnStartGame.onClick.AddListener(StartGame);
-    }
-
-
-    void SetInputs()
-    {
-        // Menu (Pause)
-        inputReader.Menu.callback += Menu_OnClicked;
     }
 
     void LoadCharacterSelectionMenu()
@@ -137,10 +126,14 @@ public class MenuManager : MonoBehaviour
         player1.Creation();
         player2.Creation();
         
+        // Assigner les inputs
+        FindObjectOfType<InputSchemeAssigner>().Assign();
+        
         InGameMenu.SetActive(true);
         CharacterSelectionMenu.SetActive(false);
         
-
+        // Set les joueurs dans le UI In Game
+        FindObjectOfType<InGameManager>().SetPlayers();
     }
 
     void SelectCharacter1()

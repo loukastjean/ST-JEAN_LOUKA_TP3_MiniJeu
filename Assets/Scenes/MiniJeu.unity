@@ -3078,8 +3078,6 @@ GameObject:
   - component: {fileID: 1196218480}
   - component: {fileID: 1196218484}
   - component: {fileID: 1196218487}
-  - component: {fileID: 1196218486}
-  - component: {fileID: 1196218485}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -3195,48 +3193,6 @@ MonoBehaviour:
   InGameUI: {fileID: 1883505282}
   PauseUI: {fileID: 1443026724}
   GameOverUI: {fileID: 1052472936}
---- !u!114 &1196218485
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1196218479}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1e825b443f62fcf40b426c1cbdcf642a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &1196218486
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1196218479}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 62899f850307741f2a39c98a8b639597, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Actions: {fileID: -944628639613478452, guid: 100e2614f95ed4f42be4a1ae4e52a755, type: 3}
-  m_NotificationBehavior: 0
-  m_UIInputModule: {fileID: 0}
-  m_DeviceLostEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  m_DeviceRegainedEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  m_ControlsChangedEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  m_ActionEvents: []
-  m_NeverAutoSwitchControlSchemes: 0
-  m_DefaultControlScheme: 
-  m_DefaultActionMap: Player
-  m_SplitScreenIndex: -1
-  m_Camera: {fileID: 0}
 --- !u!114 &1196218487
 MonoBehaviour:
   m_ObjectHideFlags: 0

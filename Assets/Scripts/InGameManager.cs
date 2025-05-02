@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
-public class UIManager : MonoBehaviour
+public class InGameManager : MonoBehaviour
 {
     // UI
     [SerializeField] TMP_Text player1Damage, player2Damage, player1Lives, player2Lives, timer, gagnant;
@@ -14,11 +14,6 @@ public class UIManager : MonoBehaviour
     MenuManager menu;
 
     bool justAppeared;
-
-    void Awake()
-    {
-        SetPlayers();
-    }
     
     // Start is called before the first frame update
     void Start()
@@ -26,7 +21,7 @@ public class UIManager : MonoBehaviour
         justAppeared = false;
     }
 
-    void SetPlayers()
+    public void SetPlayers()
     {
         Personnage[] players = FindObjectsOfType<Personnage>();
 
@@ -119,7 +114,6 @@ public class UIManager : MonoBehaviour
     public void Pause()
     {
         Debug.Log(Time.timeScale);
-        
         
         // Si en pause
         if (Time.timeScale == 0)

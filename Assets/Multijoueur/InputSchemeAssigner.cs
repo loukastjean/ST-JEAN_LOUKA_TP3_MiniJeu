@@ -7,7 +7,7 @@ public class InputSchemeAssigner : MonoBehaviour
 {
     // Attention, ce système ne peut pas gérer plus de 2 joueurs sur le même clavier.
 
-    private void Start()
+    public void Assign()
     {
         // Nombre de joueurs
         int playerCount = PlayerInput.all.Count;

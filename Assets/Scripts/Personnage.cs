@@ -8,7 +8,7 @@ public class Personnage : MonoBehaviour
     PlayerInputReader inputReader;
     Animator animator;
     
-    UIManager uiManager;
+    InGameManager ingameManager;
     
     Vector2 mouvement;
 
@@ -83,7 +83,7 @@ public class Personnage : MonoBehaviour
 
     void Menu_OnClicked()
     {
-        uiManager.Pause();
+        ingameManager.Pause();
     }
 
     
@@ -94,7 +94,7 @@ public class Personnage : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         sr = GetComponent<SpriteRenderer>();
         animator = GetComponent<Animator>();
-        uiManager = FindObjectOfType<UIManager>();
+        ingameManager = FindObjectOfType<InGameManager>();
         
         // S'abonner aux inputs
         SetInputs();

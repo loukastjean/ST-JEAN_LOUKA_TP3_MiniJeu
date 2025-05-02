@@ -2,13 +2,15 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class InGameManager : MonoBehaviour
 {
     // UI
     [SerializeField] TMP_Text player1Damage, player2Damage, player1Lives, player2Lives, timer, gagnant;
     [SerializeField] GameObject inGameUI, pauseUI,gameOverUI;
-    [SerializeField] GameObject btnReplay, btnSelectCharacters, btnMainMenu;
+    [SerializeField] Button btnMainMenu;
     
     Personnage player1, player2;
     
@@ -22,6 +24,7 @@ public class InGameManager : MonoBehaviour
     {
         startingTime = Time.time;
         lastTimePaused = -99f;
+        btnMainMenu.onClick.AddListener(ReloadScene);
     }
 
     public void SetPlayers()
@@ -106,6 +109,13 @@ public class InGameManager : MonoBehaviour
         }
 
         return player1.lives <= 0 || player2.lives <= 0;
+    }
+
+
+    void ReloadScene()
+    {
+        var currentScene = SceneManager.GetActiveScene();
+        SceneManager.LoadScene(currentScene.buildIndex);
     }
 
 

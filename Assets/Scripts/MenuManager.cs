@@ -30,8 +30,6 @@ public class MenuManager : MonoBehaviour
     {
         eventSystem = EventSystem.current;
         
-        buttons = player1Characters.Concat(player2Characters).ToList();
-        
         LoadMainMenu();
 
         SetButtonEvents();
@@ -68,6 +66,8 @@ public class MenuManager : MonoBehaviour
 
     void LoadCharacterSelectionMenu()
     {
+        buttons = player1Characters.Concat(player2Characters).ToList();
+        
         // Selectionner le joueur bleu par defaut
         buttons[0].Select();
         
@@ -80,6 +80,10 @@ public class MenuManager : MonoBehaviour
     
     void LoadMainMenu()
     {
+        buttons = new List<Button> {btnPlay, btnSettings, btnQuit};
+        
+        buttons[0].Select();
+        
         // Juste pour faire sur, desactiver playerselectionet enable MainMenu
         CharacterSelectionMenu.SetActive(false);
         MainMenu.SetActive(true);
@@ -127,7 +131,7 @@ public class MenuManager : MonoBehaviour
         player2.Creation();
         
         // Assigner les inputs
-        FindObjectOfType<InputSchemeAssigner>().Assign();
+        InputSchemeAssigner.AssignSchemes();
         
         InGameMenu.SetActive(true);
         CharacterSelectionMenu.SetActive(false);

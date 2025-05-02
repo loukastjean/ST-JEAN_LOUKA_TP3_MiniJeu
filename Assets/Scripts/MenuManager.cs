@@ -136,6 +136,20 @@ public class MenuManager : MonoBehaviour
         InGameMenu.SetActive(true);
         CharacterSelectionMenu.SetActive(false);
         
+        // Add a LineRenderer component
+        player1.lineRenderer = player1.GetComponent<LineRenderer>();
+
+        // Set the color
+        player1.lineRenderer.startColor = Color.blue;
+        player1.lineRenderer.endColor = Color.blue;
+        
+        // Add a LineRenderer component
+        player2.lineRenderer = player2.GetComponent<LineRenderer>();
+
+        // Set the color
+        player2.lineRenderer.startColor = Color.red;
+        player2.lineRenderer.endColor = Color.red;
+        
         // Set les joueurs dans le UI In Game
         FindObjectOfType<InGameManager>().SetPlayers();
     }

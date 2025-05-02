@@ -39,6 +39,8 @@ public class Personnage : MonoBehaviour
 
     [SerializeField] bool canJumpWithStick;
     bool wantsToShoot;
+    
+    public LineRenderer lineRenderer;
 
     // void Awake()
     // {
@@ -65,7 +67,7 @@ public class Personnage : MonoBehaviour
     // Right stick
     void RS_moved(Vector2 direction)
     {
-        if (direction != Vector2.zero)
+        if (direction.magnitude > 0.1f)
             aim = direction;
     }
     
@@ -100,6 +102,8 @@ public class Personnage : MonoBehaviour
         SetInputs();
         
         SetAttributes();
+        
+
     }
 
     void SetInputs()
@@ -140,16 +144,18 @@ public class Personnage : MonoBehaviour
 
         lives = 5;
     }
-
+    
     void Update()
     {
         if (ExitedField())
             Respawn();
         
+        // Update the point positions of the line renderer
+        lineRenderer.SetPosition(0, transform.position);
+        lineRenderer.SetPosition(1, transform.position + new Vector3(aim.x, aim.y).normalized * 100f);
+        
         if (wantsToShoot)
             Shoot(aim);
-        
-        Debug.Log(rb.velocity.y);
         
         animator.SetBool("isFalling", rb.velocity.y < -15f);
         

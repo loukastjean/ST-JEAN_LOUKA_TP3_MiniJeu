@@ -39,6 +39,21 @@ public class Personnage : MonoBehaviour
 
     [SerializeField] bool canJumpWithStick;
     bool wantsToShoot;
+
+    // void Awake()
+    // {
+    //     // Assigner le PlayerInputReader
+    //     inputReader = GetComponent<PlayerInputReader>();
+    //     rb = GetComponent<Rigidbody2D>();
+    //     sr = GetComponent<SpriteRenderer>();
+    //     animator = GetComponent<Animator>();
+    //     uiManager = FindObjectOfType<UIManager>();
+    //     
+    //     // S'abonner aux inputs
+    //     SetInputs();
+    //     
+    //     SetAttributes();
+    // }
     
 
     // Left stick

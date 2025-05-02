@@ -14,6 +14,11 @@ public class UIManager : MonoBehaviour
     MenuManager menu;
 
     bool justAppeared;
+
+    void Awake()
+    {
+        SetPlayers();
+    }
     
     // Start is called before the first frame update
     void Start()
@@ -46,7 +51,7 @@ public class UIManager : MonoBehaviour
         if (!justAppeared)
         {
             justAppeared = true;
-            SetPlayers();
+            //SetPlayers();
         }
         
         if (!VerifyGameOver())
@@ -87,13 +92,21 @@ public class UIManager : MonoBehaviour
             //InGameUI.SetActive(false); // Désactiver l'UI en jeu
             GameOverUI.SetActive(true); // Activer l'UI de fin de jeu
             
-            gagnant.text = "Gagnant: Joueur de ";
+            gagnant.text = "Gagnant: Joueur ";
 
             // Afficher le gagnant et le perdant pour chaque équipe
             if (player1.lives <= 0)
-                gagnant.text += "Droite";
+            {
+                gagnant.text += "1";
+                gagnant.color = new Color(0.772549f, 0f, 0f);
+            }
+
             else
-                gagnant.text += "Gauche";
+            {
+                gagnant.text += "2";
+                gagnant.color = new Color(0f, 0.2666667f, 0.9647059f);
+            }
+                
 
             Update_Damage();
             Update_Lives();

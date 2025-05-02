@@ -179,9 +179,6 @@ public class Personnage : MonoBehaviour
         if ((mouvement.x > 0 && rb.velocity.x < 0) || (mouvement.x < 0 && rb.velocity.x > 0))
             rb.velocity += new Vector2(mouvement.x * vitesse * Time.fixedDeltaTime * 5f, 0);
         
-        Debug.DrawRay(transform.position, rb.velocity, Color.red, 2f);
-        //rb.MovePosition(rb.position + mouvement * vitesse * Time.fixedDeltaTime);
-        //rb.AddForce(mouvement * vitesse * Time.fixedDeltaTime, ForceMode2D.Impulse);
     }
 
     void Jump()

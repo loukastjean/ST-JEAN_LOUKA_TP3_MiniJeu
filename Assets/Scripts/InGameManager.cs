@@ -7,11 +7,12 @@ public class InGameManager : MonoBehaviour
 {
     // UI
     [SerializeField] TMP_Text player1Damage, player2Damage, player1Lives, player2Lives, timer, gagnant;
-    [SerializeField] GameObject InGameUI, PauseUI,GameOverUI;
+    [SerializeField] GameObject inGameUI, pauseUI,gameOverUI;
+    [SerializeField] GameObject btnReplay, btnSelectCharacters, btnMainMenu;
     
     Personnage player1, player2;
-
-    MenuManager menu;
+    
+    
 
     float startingTime;
     float lastTimePaused;
@@ -42,7 +43,7 @@ public class InGameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (!InGameUI.activeSelf)
+        if (!inGameUI.activeSelf)
             return;
         
         if (!VerifyGameOver())
@@ -82,7 +83,7 @@ public class InGameManager : MonoBehaviour
         if (player1.lives <= 0 || player2.lives <= 0)
         {
             //InGameUI.SetActive(false); // Désactiver l'UI en jeu
-            GameOverUI.SetActive(true); // Activer l'UI de fin de jeu
+            gameOverUI.SetActive(true); // Activer l'UI de fin de jeu
             
             gagnant.text = "Gagnant: Joueur ";
 
@@ -120,13 +121,13 @@ public class InGameManager : MonoBehaviour
         // Si en pause
         if (Time.timeScale == 0)
         {
-            PauseUI.SetActive(true); // Activer l'UI de pause
+            pauseUI.SetActive(true); // Activer l'UI de pause
             Debug.Log("Pause");
             Time.timeScale = 1;
         }
         else
         {
-            PauseUI.SetActive(false); // Desactiver l'UI de pause
+            pauseUI.SetActive(false); // Desactiver l'UI de pause
             Debug.Log("Unpause");
             Time.timeScale = 0.01f;
         }

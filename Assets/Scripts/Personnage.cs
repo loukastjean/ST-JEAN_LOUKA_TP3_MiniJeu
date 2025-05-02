@@ -134,6 +134,9 @@ public class Personnage : MonoBehaviour
         if (wantsToShoot)
             Shoot(aim);
         
+        if (rb.velocity.y < -3f)
+            animator.SetBool("isFalling", true);
+        
         if (IsGrounded() && rb.velocity.y == 0)
         {
             // Si il est au sol, il reprend ses 2 sauts
@@ -143,6 +146,7 @@ public class Personnage : MonoBehaviour
             if (!previouslyGrounded)
             {
                 lastDashTime = -99f;
+                animator.SetBool("isFalling", false);
                 animator.SetTrigger("endJumping");
             }
         }

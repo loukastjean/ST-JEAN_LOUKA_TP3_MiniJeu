@@ -13,12 +13,14 @@ public class InGameManager : MonoBehaviour
 
     MenuManager menu;
 
-    bool justAppeared;
+    float startingTime;
+    float lastTimePaused;
     
     // Start is called before the first frame update
     void Start()
     {
-        justAppeared = false;
+        startingTime = Time.time;
+        lastTimePaused = -99f;
     }
 
     public void SetPlayers()
@@ -42,15 +44,10 @@ public class InGameManager : MonoBehaviour
     {
         if (!InGameUI.activeSelf)
             return;
-
-        if (!justAppeared)
-        {
-            justAppeared = true;
-            //SetPlayers();
-        }
         
         if (!VerifyGameOver())
         {
+            Debug.Log("Game NOT Over");
             Update_Timer();
             Update_Damage();
             Update_Lives();
@@ -60,8 +57,8 @@ public class InGameManager : MonoBehaviour
     void Update_Timer()
     {
         // Calculer les minutes et secondes écoulées depuis le début du jeu
-        var minutes = Mathf.FloorToInt(Time.time / 60);
-        var secondes = Mathf.FloorToInt(Time.time % 60);
+        var minutes = Mathf.FloorToInt((Time.time - startingTime) / 60);
+        var secondes = Mathf.FloorToInt((Time.time - startingTime) % 60);
 
         // Afficher le timer dans le format MM:SS
         timer.text = $"{minutes:D2}:{secondes:D2}";
@@ -90,16 +87,16 @@ public class InGameManager : MonoBehaviour
             gagnant.text = "Gagnant: Joueur ";
 
             // Afficher le gagnant et le perdant pour chaque équipe
-            if (player1.lives <= 0)
+            if (player2.lives <= 0)
             {
                 gagnant.text += "1";
-                gagnant.color = new Color(0.772549f, 0f, 0f);
+                gagnant.color = new Color(0f, 0.2666667f, 0.9647059f);
             }
 
             else
             {
                 gagnant.text += "2";
-                gagnant.color = new Color(0f, 0.2666667f, 0.9647059f);
+                gagnant.color = new Color(0.772549f, 0f, 0f);
             }
                 
 
@@ -115,6 +112,11 @@ public class InGameManager : MonoBehaviour
     {
         Debug.Log(Time.timeScale);
         
+        if (Time.time < lastTimePaused + 0.2f)
+            return;
+        
+        lastTimePaused = Time.time;
+        
         // Si en pause
         if (Time.timeScale == 0)
         {
@@ -126,7 +128,7 @@ public class InGameManager : MonoBehaviour
         {
             PauseUI.SetActive(false); // Desactiver l'UI de pause
             Debug.Log("Unpause");
-            Time.timeScale = 0;
+            Time.timeScale = 0.01f;
         }
     }
 }

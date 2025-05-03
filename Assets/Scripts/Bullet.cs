@@ -1,92 +1,95 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class Bullet : MonoBehaviour
 {
-    [SerializeField] float vitesse;
-    float degats;
-    Vector2 movement;
+    private Personnage creator;
+    private Vector2 movement;
 
-    Personnage creator;
-    
-    SpriteRenderer rend;
-    
-    
-    
+    private SpriteRenderer rend;
+    private float speed, damage;
+
     // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
         rend = GetComponent<SpriteRenderer>();
     }
 
-    public void SetAttributes(Vector2 destination, Vector2 position, Personnage personnage)
-    {
-        vitesse = 40f;
-        degats = 10f;
-        
-        transform.position = position;
-        movement = destination.normalized;
-        creator = personnage;
-    }
-
     // Update is called once per frame
-    void Update()
+    private void Update()
     {
-        // Mauvaise logique, juste pour tester
+        // Si le projectile entre en contact avec l'ennemi
         if (TouchedEnemy())
-        {
+            // Il se detruit et inflige du dommage a l'ennemi
             OnContact();
-        }
-        
+
+        // Si il est parti plus loin que les bordures de l'arene
         if (ExitedField())
             Destroy(gameObject);
     }
 
-    void FixedUpdate()
+    private void FixedUpdate()
     {
+        // Bouge le projectile a une vitesse fixe
         Move();
     }
 
-    void Move()
+    // Set les informations au sujet du projectile
+    public void SetAttributes(Vector2 destination, Vector2 position, Personnage personnage)
     {
-        transform.Translate(movement * (vitesse * Time.fixedDeltaTime));
+        speed = 40f;
+        damage = 10f;
+
+        // Son point de depart
+        transform.position = position;
+
+        // Son mouvement
+        movement = destination.normalized;
+
+        // La personne qui l'a tiré, car il doit infliger du dommage aux ennemis seulement
+        creator = personnage;
     }
 
-    bool TouchedEnemy()
+    private void Move()
+    {
+        transform.Translate(movement * (speed * Time.fixedDeltaTime));
+    }
+
+    private bool TouchedEnemy()
     {
         return EnnemiesInContact().Count > 0;
     }
 
-    void OnContact()
+    private void OnContact()
     {
-        // Faire du dommage à l'ennemi
+        // Faire du dommage a tous les ennemis avec qui le projectile est en contact
         foreach (var enemy in EnnemiesInContact())
-            enemy.SubirDegats(degats, movement);
-        
-        // Pour l'instant
+            enemy.SubirDegats(damage, movement);
+
+        // Detruit le projectile
         Destroy(gameObject);
     }
 
-    List<Personnage> EnnemiesInContact()
+    private List<Personnage> EnnemiesInContact()
     {
-        var personnages = new List<Personnage>();
-        
+        var characters = new List<Personnage>();
+
         // Get les colliders qui sont pres 
         var colliders = Physics2D.OverlapCircleAll(transform.position, rend.bounds.extents.x);
-        
+
         // Vérifie chaque collider pour savoir s'il s'agit d'une unité
         foreach (var collider in colliders)
-            if (collider.TryGetComponent(out Personnage personnage))
-                if (personnage != creator)
-                    personnages.Add(personnage);
-        
-        return personnages;
+            if (collider.TryGetComponent(out Personnage character))
+                // Si c'est un autre que celui qui a cree le projectile
+                if (character != creator)
+                    characters.Add(character);
+
+        return characters;
     }
-    
-    bool ExitedField()
+
+    private bool ExitedField()
     {
         // Si il part trop d'un bord ou de l'autre du terrain en X OU Si il tombe trop bas
-        return Mathf.Abs(transform.position.x) > 40f || transform.position.y < -20f;
+        return Mathf.Abs(transform.position.x) > 60f || transform.position.y < -40f;
     }
 }

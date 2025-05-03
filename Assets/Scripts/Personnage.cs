@@ -1,94 +1,118 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Personnage : MonoBehaviour
 {
+    [SerializeField] private GameObject prefabBullet;
+
+    private float vitesse, jumpForce, dashForce;
+    private int numberJumps;
+    private bool canJumpWithStick;
+    
+    public LineRenderer lineRenderer;
+    private Vector2 aim = Vector2.zero;
+    private Animator animator;
+
+    private readonly Vector2 feetPosition = new(-0.75f, -2.56f);
+    private readonly float feetWidth = 1.5f;
+
+    private InGameManager ingameManager;
+
     // Référence au PlayerInputReader
-    PlayerInputReader inputReader;
-    Animator animator;
-    
-    InGameManager ingameManager;
-    
-    Vector2 mouvement;
+    private PlayerInputReader inputReader;
+    private float lastDashTime;
+    private float lastShotTime;
 
-    [SerializeField] float vitesse;
+    private Vector2 mouvement;
 
-    [SerializeField] float jumpForce;
-    [SerializeField] int numberJumps;
+    private bool previouslyGrounded;
 
-    [SerializeReference] float dashForce;
+    private Rigidbody2D rb;
+
+    private readonly Vector2 respawnPosition = new(0, 10f);
+    private SpriteRenderer sr;
+    private bool wantsToShoot;
 
     public float damage { get; private set; }
     public int lives { get; private set; }
     
-    Rigidbody2D rb;
-    SpriteRenderer sr;
-
-    Vector2 feetPosition = new(-0.75f, -2.56f);
-    float feetWidth = 1.5f;
+    private AudioSource audioSource;
     
-    Vector2 respawnPosition = new(0, 10f);
-
-    public GameObject prefabBullet;
-
-    bool previouslyGrounded = false;
-    Vector2 aim = Vector2.zero;
-    float lastShotTime;
-    float lastDashTime;
-
-    [SerializeField] bool canJumpWithStick;
-    bool wantsToShoot;
+    private AudioClip clipWalk, clipShoot, clipHurt, clipJump, clipDash;
     
-    public LineRenderer lineRenderer;
 
-    // void Awake()
-    // {
-    //     // Assigner le PlayerInputReader
-    //     inputReader = GetComponent<PlayerInputReader>();
-    //     rb = GetComponent<Rigidbody2D>();
-    //     sr = GetComponent<SpriteRenderer>();
-    //     animator = GetComponent<Animator>();
-    //     uiManager = FindObjectOfType<UIManager>();
-    //     
-    //     // S'abonner aux inputs
-    //     SetInputs();
-    //     
-    //     SetAttributes();
-    // }
-    
+    private void Update()
+    {
+        if (ExitedField())
+            Respawn();
+
+        // Update the point positions of the line renderer
+        lineRenderer.SetPosition(0, transform.position);
+        lineRenderer.SetPosition(1, transform.position + new Vector3(aim.x, aim.y).normalized * 100f);
+
+        if (wantsToShoot)
+            Shoot(aim);
+
+        animator.SetBool("isFalling", rb.velocity.y < -15f);
+
+        if (IsGrounded() && rb.velocity.y == 0)
+        {
+            // Si il est au sol, il reprend ses 2 sauts
+            numberJumps = 0;
+
+            // Si il n'etait pas deja a terre
+            if (!previouslyGrounded)
+            {
+                lastDashTime = -99f;
+                animator.SetTrigger("endJumping");
+            }
+        }
+
+        previouslyGrounded = IsGrounded();
+    }
+
+    // Update is called once per frame
+    private void FixedUpdate()
+    {
+        transform.Translate(mouvement * vitesse * Time.fixedDeltaTime);
+
+        // Pour ajouter de la velocite au rigidbody seulement quand il veut bouger en sens inverse de ou il va
+        // Verifier donc si le decplacement est contraire a la velocite
+        if ((mouvement.x > 0 && rb.velocity.x < 0) || (mouvement.x < 0 && rb.velocity.x > 0))
+            rb.velocity += new Vector2(mouvement.x * vitesse * Time.fixedDeltaTime * 5f, 0);
+    }
+
 
     // Left stick
-    void LS_moved(Vector2 direction)
+    private void LS_moved(Vector2 direction)
     {
         Move(direction);
     }
-    
+
     // Right stick
-    void RS_moved(Vector2 direction)
+    private void RS_moved(Vector2 direction)
     {
         if (direction.magnitude > 0.1f)
             aim = direction;
     }
-    
+
     // Right trigger
-    void RT_moved(float press)
+    private void RT_moved(float press)
     {
         wantsToShoot = press > 0.4f;
     }
-    
+
     // Button east
-    void BE_onClicked()
+    private void BE_onClicked()
     {
         Dash();
     }
 
-    void Menu_OnClicked()
+    private void Menu_OnClicked()
     {
         ingameManager.Pause();
     }
 
-    
+
     public void Creation()
     {
         // Assigner le PlayerInputReader
@@ -98,15 +122,15 @@ public class Personnage : MonoBehaviour
         animator = GetComponent<Animator>();
         ingameManager = FindObjectOfType<InGameManager>();
         
+        
+
         // S'abonner aux inputs
         SetInputs();
-        
-        SetAttributes();
-        
 
+        SetAttributes();
     }
 
-    void SetInputs()
+    private void SetInputs()
     {
         // Left stick/WASD
         inputReader.LS_m.callback += LS_moved;
@@ -120,91 +144,49 @@ public class Personnage : MonoBehaviour
         inputReader.Menu.callback += Menu_OnClicked;
     }
 
-    void SpawnAttributes()
+    private void SpawnAttributes()
     {
         lastShotTime = -99f;
         lastDashTime = -99f;
         wantsToShoot = false;
         canJumpWithStick = true;
         numberJumps = 0;
-        
+
         mouvement = Vector2.zero;
         rb.velocity = Vector2.zero;
-        
+
         damage = 0f;
     }
 
-    void SetAttributes()
+    private void SetAttributes()
     {
         SpawnAttributes();
-        
+
         vitesse = 20f;
         jumpForce = 35f;
         dashForce = 30f;
 
         lives = 5;
     }
-    
-    void Update()
-    {
-        if (ExitedField())
-            Respawn();
-        
-        // Update the point positions of the line renderer
-        lineRenderer.SetPosition(0, transform.position);
-        lineRenderer.SetPosition(1, transform.position + new Vector3(aim.x, aim.y).normalized * 100f);
-        
-        if (wantsToShoot)
-            Shoot(aim);
-        
-        animator.SetBool("isFalling", rb.velocity.y < -15f);
-        
-        if (IsGrounded() && rb.velocity.y == 0)
-        {
-            // Si il est au sol, il reprend ses 2 sauts
-            numberJumps = 0;
-            
-            // Si il n'etait pas deja a terre
-            if (!previouslyGrounded)
-            {
-                lastDashTime = -99f;
-                animator.SetTrigger("endJumping");
-            }
-        }
-        
-        previouslyGrounded = IsGrounded();
-    }
 
-    // Update is called once per frame
-    void FixedUpdate()
-    {
-        transform.Translate(mouvement * vitesse * Time.fixedDeltaTime);
-        
-        // Pour ajouter de la velocite au rigidbody seulement quand il veut bouger en sens inverse de ou il va
-        // Verifier donc si le decplacement est contraire a la velocite
-        if ((mouvement.x > 0 && rb.velocity.x < 0) || (mouvement.x < 0 && rb.velocity.x > 0))
-            rb.velocity += new Vector2(mouvement.x * vitesse * Time.fixedDeltaTime * 5f, 0);
-        
-    }
-
-    void Jump()
+    private void Jump()
     {
         // Si il a deja saute 2 fois, ne pas le laisser sauter plus
         if (numberJumps >= 2)
             return;
-        
+
         // Incrementer le nombre de jumps qu'il fait
         numberJumps++;
-        
+
         animator.SetTrigger("startJumping");
-        
+
         // Faire que peu importe sa velocite, il saute la meme hauteur
         rb.velocity = new Vector2(rb.velocity.x, 0);
         // Sauter un peu vers la direction du joystick ou on veut aller
         rb.AddForce((Vector2.up + mouvement * 0.1f).normalized * jumpForce, ForceMode2D.Impulse);
     }
 
-    void Dash()
+    private void Dash()
     {
         if (Time.time < lastDashTime + 3f)
             return;
@@ -217,15 +199,15 @@ public class Personnage : MonoBehaviour
         lastDashTime = Time.time;
     }
 
-    void Move(Vector2 direction)
+    private void Move(Vector2 direction)
     {
         // Si il est en dessous du trigger de saut
         if (!canJumpWithStick && direction.y < 0.3f)
             canJumpWithStick = true;
-        
+
         if (rb.velocity.y > 0)
             rb.gravityScale = 7f;
-        
+
         else
             rb.gravityScale = 12f;
 
@@ -241,26 +223,28 @@ public class Personnage : MonoBehaviour
             direction.y *= 1.3f;
         else
             direction.y = 0;
-            
+
 
         // Si il bouge en X, le faire marcher
         if (Mathf.Abs(direction.x) > 0f)
         {
             animator.SetBool("isWalking", true);
-            
+
             // Si la direction est < 0, donc a gauche, flip le sprite
             sr.flipX = direction.x < 0f;
         }
         else
+        {
             animator.SetBool("isWalking", false);
-        
+        }
+
         mouvement = direction;
     }
 
-    void Respawn()
+    private void Respawn()
     {
         SpawnAttributes();
-        
+
         lives--;
         transform.position = respawnPosition;
     }
@@ -268,36 +252,38 @@ public class Personnage : MonoBehaviour
     public void SubirDegats(float degats, Vector2 direction)
     {
         damage += degats;
-        
+
         if (direction.y < 0f && IsGrounded())
             direction.x *= 2f;
-        
-        rb.AddForce(direction.normalized * (damage/3 + 40f), ForceMode2D.Impulse);
+
+        rb.AddForce(direction.normalized * (damage / 3 + 40f), ForceMode2D.Impulse);
     }
 
-    void Shoot(Vector2 direction)
+    private void Shoot(Vector2 direction)
     {
         if (direction == Vector2.zero || Time.time - lastShotTime < 0.8f)
             return;
-            
-        Bullet bullet = Instantiate(prefabBullet, transform.position, Quaternion.identity).GetComponent<Bullet>();
-        
+
+        var bullet = Instantiate(prefabBullet, transform.position, Quaternion.identity).GetComponent<Bullet>();
+
         bullet.SetAttributes(direction, transform.position, this);
-        
+
         lastShotTime = Time.time;
     }
 
-    bool ExitedField()
+    private bool ExitedField()
     {
         // Si il part trop d'un bord ou de l'autre du terrain en X OU Si il tombe trop bas
         return Mathf.Abs(transform.position.x) > 70f || transform.position.y < -30f;
     }
 
-    bool IsGrounded()
+    private bool IsGrounded()
     {
         // Fait une ligne en dessous des pieds et regarde si elle est en contact avec le sol
-        RaycastHit2D hit = Physics2D.Raycast(new Vector2(transform.position.x + feetPosition.x, transform.position.y + feetPosition.y), Vector2.right, feetWidth, LayerMask.GetMask("Ground"));
-        
+        var hit = Physics2D.Raycast(
+            new Vector2(transform.position.x + feetPosition.x, transform.position.y + feetPosition.y), Vector2.right,
+            feetWidth, LayerMask.GetMask("Ground"));
+
         // Hitbox de pieds pour isgrounded DEBUG
         //Debug.DrawRay(new Vector3(transform.position.x + feetPosition.x, transform.position.y + feetPosition.y), Vector3.right * feetWidth, Color.red, 5f);
 

@@ -114,6 +114,8 @@ public class InGameManager : MonoBehaviour
 
     void ReloadScene()
     {
+        
+        
         var currentScene = SceneManager.GetActiveScene();
         SceneManager.LoadScene(currentScene.buildIndex);
     }

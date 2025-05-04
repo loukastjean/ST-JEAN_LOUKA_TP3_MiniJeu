@@ -6,8 +6,8 @@ using UnityEngine.UI;
 
 public class MenuManager : MonoBehaviour
 {
-    [SerializeField] private Button btnPlay, btnSettings, btnQuit, btnStartGame;
-    [SerializeField] private GameObject mainMenu, characterSelectionMenu, inGameMenu;
+    [SerializeField] private Button btnPlay, btnInfos, btnQuit, btnStartGame, btnCloseInfos;
+    [SerializeField] private GameObject mainMenu, characterSelectionMenu, inGameMenu, infosMenu;
     [SerializeField] private List<Button> player1Characters, player2Characters;
     [SerializeField] private List<GameObject> prefabs;
 
@@ -33,10 +33,12 @@ public class MenuManager : MonoBehaviour
     {
         // Ajouter un listener sur btnJouer
         btnPlay.onClick.AddListener(Play);
-        // Ajouter un listener sur btnParametres
-        btnSettings.onClick.AddListener(Settings);
+        // Ajouter un listener sur btnInfos
+        btnInfos.onClick.AddListener(Infos);
         // Ajouter un listener sur btnQuitter
         btnQuit.onClick.AddListener(Quit);
+        // Ajouter un listener sur le bouton de fermer les infos
+        btnCloseInfos.onClick.AddListener(CloseInfos);
 
         // S'abonner a l'evenement de clic de chaque bouton
         foreach (var btnCharacter in player1Characters) btnCharacter.onClick.AddListener(SelectCharacter1);
@@ -62,10 +64,8 @@ public class MenuManager : MonoBehaviour
 
     private void LoadMainMenu()
     {
-        buttons = new List<Button> { btnPlay, btnSettings, btnQuit };
-
         // Par defaut selectionne Jouer
-        buttons[0].Select();
+        btnPlay.Select();
 
         // desactiver characterselection et active MainMenu
         characterSelectionMenu.SetActive(false);
@@ -77,8 +77,22 @@ public class MenuManager : MonoBehaviour
         LoadCharacterSelectionMenu();
     }
 
-    private void Settings()
+    private void Infos()
     {
+        infosMenu.SetActive(true);
+        btnPlay.interactable = false;
+        btnInfos.interactable = false;
+        btnQuit.interactable = false;
+        btnCloseInfos.Select();
+    }
+
+    private void CloseInfos()
+    {
+        infosMenu.SetActive(false);
+        btnPlay.interactable = true;
+        btnInfos.interactable = true;
+        btnQuit.interactable = true;
+        btnInfos.Select();
     }
 
     private void Quit()

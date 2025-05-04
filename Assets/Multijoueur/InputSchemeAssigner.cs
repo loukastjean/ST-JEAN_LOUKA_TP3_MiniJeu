@@ -13,7 +13,7 @@ public static class InputSchemeAssigner
     static int gamePadCount = 0;
 
     // La classe a été initialisé?
-    static bool isInitialized = false;
+    public static bool isInitialized = false;
 
     /// <summary>
     /// Assigne un appareil à chacun des joueurs (manettes ou clavier)

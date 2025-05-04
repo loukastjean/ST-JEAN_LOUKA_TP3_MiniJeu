@@ -62,8 +62,11 @@ public class InGameManager : MonoBehaviour
 
         player1 = _player1;
         player2 = _player2;
-        
-        InputSchemeAssigner.AssignSchemes();
+
+        if (!InputSchemeAssigner.isInitialized)
+        {
+            InputSchemeAssigner.AssignSchemes();
+        }
 
         player1.Creation();
         player2.Creation();
@@ -162,6 +165,9 @@ public class InGameManager : MonoBehaviour
     private void ReloadScene()
     {
         // Rejoue la scene du jeu pour revenir au menu principal
+        player1.RemoveInputs();
+        player2.RemoveInputs();
+        
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 

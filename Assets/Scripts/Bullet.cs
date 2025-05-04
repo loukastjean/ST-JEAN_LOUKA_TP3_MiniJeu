@@ -6,97 +6,112 @@ public class Bullet : MonoBehaviour
     private Personnage creator;
     private Vector2 movement;
 
-    private SpriteRenderer rend;
-    private float speed, damage;
+    private SpriteRenderer spriteRenderer;
+    private float speed;
+    private float damage;
 
-    // Start is called before the first frame update
+    #region Unity Methods
+
     private void Start()
     {
-        rend = GetComponent<SpriteRenderer>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
-    // Update is called once per frame
     private void Update()
     {
-        // Si le projectile entre en contact avec l'ennemi
-        if (TouchedEnemy())
-            // Il se detruit et inflige du dommage a l'ennemi
-            OnContact();
+        // Si il frappe un ennemi
+        if (HasHitEnemy())
+            HandleImpact();
 
-        // Si il est parti plus loin que les bordures de l'arene
-        if (ExitedField())
+        // Si il a depasse les limites
+        if (IsOutOfBounds())
             Destroy(gameObject);
     }
 
     private void FixedUpdate()
     {
-        // Bouge le projectile a une vitesse fixe
         Move();
     }
 
-    // Set les informations au sujet du projectile
-    public void SetAttributes(Vector2 destination, Vector2 position, Personnage personnage)
+    #endregion
+
+    #region Initialization
+
+    // Set les variables importantes du projectile quand il est créé
+    public void SetAttributes(Vector2 direction, Vector2 origin, Personnage shooter)
     {
+        transform.position = origin;
+        movement = direction.normalized;
+
         speed = 40f;
         damage = 10f;
-
-        // Son point de depart
-        transform.position = position;
-
-        // Son mouvement
-        movement = destination.normalized;
-
-        // La personne qui l'a tiré, car il doit infliger du dommage aux ennemis seulement
-        creator = personnage;
+        creator = shooter;
     }
 
+    #endregion
+
+    #region Logic
+
+    // Fait bouger le projectile à une vitesse constante
     private void Move()
     {
-        transform.Translate(movement * (speed * Time.fixedDeltaTime));
+        transform.Translate(movement * speed * Time.fixedDeltaTime);
     }
 
-    private bool TouchedEnemy()
+    // Verifie si le projectile touche a un ennemi
+    private bool HasHitEnemy()
     {
-        return EnnemiesInContact().Count > 0;
+        return GetEnemiesInRange().Count > 0;
     }
 
-    private bool TouchedGround()
+    // Inflige les degats quand le projectile touche un ennemi
+    private void HandleImpact()
     {
-        var colliders = Physics2D.OverlapCircleAll(transform.position, rend.bounds.extents.x, LayerMask.GetMask("Ground"));
-        
-        return colliders.Length > 0;
-    }
-
-    private void OnContact()
-    {
-        // Faire du dommage a tous les ennemis avec qui le projectile est en contact
-        foreach (var enemy in EnnemiesInContact())
+        foreach (var enemy in GetEnemiesInRange())
+        {
             enemy.SubirDegats(damage, movement);
+        }
 
-        // Detruit le projectile
         Destroy(gameObject);
     }
 
-    private List<Personnage> EnnemiesInContact()
+    // Si le projectile est à l'exterieur des limites
+    private bool IsOutOfBounds()
     {
-        var characters = new List<Personnage>();
-
-        // Get les colliders qui sont pres 
-        var colliders = Physics2D.OverlapCircleAll(transform.position, rend.bounds.extents.x);
-
-        // Vérifie chaque collider pour savoir s'il s'agit d'une unité
-        foreach (var collider in colliders)
-            if (collider.TryGetComponent(out Personnage character))
-                // Si c'est un autre que celui qui a cree le projectile
-                if (character != creator)
-                    characters.Add(character);
-
-        return characters;
-    }
-
-    private bool ExitedField()
-    {
-        // Si il part trop d'un bord ou de l'autre du terrain en X OU Si il tombe trop bas
         return Mathf.Abs(transform.position.x) > 60f || transform.position.y < -40f;
     }
+
+    #endregion
+
+    #region Helpers
+
+    // Recupere les ennemis qui touche au projectile
+    private List<Personnage> GetEnemiesInRange()
+    {
+        var enemies = new List<Personnage>();
+
+        var radius = spriteRenderer.bounds.extents.x;
+        var colliders = Physics2D.OverlapCircleAll(transform.position, radius);
+
+        foreach (var col in colliders)
+        {
+            if (col.TryGetComponent(out Personnage character) && character != creator)
+            {
+                enemies.Add(character);
+            }
+        }
+
+        return enemies;
+    }
+
+    // Si le projectile est entre en contact avec le sol
+    private bool HasHitGround()
+    {
+        float radius = spriteRenderer.bounds.extents.x;
+        var groundHits = Physics2D.OverlapCircleAll(transform.position, radius, LayerMask.GetMask("Ground"));
+
+        return groundHits.Length > 0;
+    }
+
+    #endregion
 }

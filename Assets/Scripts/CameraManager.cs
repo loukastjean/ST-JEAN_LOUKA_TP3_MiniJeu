@@ -2,69 +2,73 @@ using UnityEngine;
 
 public class CameraManager : MonoBehaviour
 {
-    [SerializeField] private GameObject InGameMenu;
+    [Header("References")]
+    [SerializeField] private GameObject inGameMenu;
 
-    // Les deux personnages
     private Personnage[] players;
-    
-    private float speed;
-    private bool justAppeared;
+    private float cameraSpeed = 5f;
+    private bool hasJustAppeared = true;
 
-    // Start is called before the first frame update
+    #region Unity Methods
+
     private void Start()
     {
-        speed = 5f;
-        justAppeared = true;
-    }
-
-    private void FixedUpdate()
-    {
-        // Si on est pas dans une partie, ne pas faire bouger la camera
-        if (!InGameMenu.activeSelf)
-            return;
-
-        MoveCamera();
+        hasJustAppeared = true;
     }
 
     private void Update()
     {
-        // Pour chercher les personnages quand la partie commence
-        if (justAppeared && InGameMenu.activeSelf)
+        // Si la partie vient de commencer, trouver les joueurs et les assigner pour faire le mouvement entre les personnages
+        if (hasJustAppeared && inGameMenu.activeSelf)
         {
             FindPlayers();
-            justAppeared = false;
+            hasJustAppeared = false;
         }
     }
 
-    public void FindPlayers()
+    private void FixedUpdate()
+    {
+        // Verifie si la partie n'est pas encore commencée
+        if (!inGameMenu.activeSelf)
+            return;
+
+        // Suit les joueurs pour viser entre eux
+        FollowPlayers();
+    }
+
+    #endregion
+
+    #region Camera Logic
+
+    private void FindPlayers()
     {
         players = FindObjectsOfType<Personnage>();
     }
 
-    private void MoveCamera()
+    private void FollowPlayers()
     {
-        // Vecteur entre les deux personnages
-        Vector2 playersPositionDifference = new(players[0].transform.position.x - players[1].transform.position.x,
-            players[0].transform.position.y - players[1].transform.position.y);
-        
-        // Point milieu entre les deux personnages
-        playersPositionDifference /= 2;
-        
-        // Calcule la destination qu'il faut atteindre avec la camera en prennant en compte sa position et celle des joueurs
-        Vector3 destination = new(playersPositionDifference.x + players[1].transform.position.x,
-            playersPositionDifference.y + players[1].transform.position.y);
-        
-        // Le mouvement que la camera doit faire pour aller au point milieu
-        Vector3 mouvementCamera = destination - transform.position;
+        // Calcule le point milieu entre les deux joueurs
+        Vector2 midpoint = (players[0].transform.position + players[1].transform.position) / 2f;
+        // Donne la position qu'il faut que la caméra doit atteindre
+        Vector3 targetPosition = new(midpoint.x, midpoint.y, transform.position.z);
 
-        // Pas depasser limites en X
-        if ((mouvementCamera.x < 0 && transform.position.x > -15) ||
-            (mouvementCamera.x > 0 && transform.position.x < 15))
-            transform.position += new Vector3(mouvementCamera.x, 0, 0) * (speed * Time.fixedDeltaTime);
+        // Trouve le mouvement que la caméra doit faire pour arriver entre les joueurs
+        Vector3 offset = targetPosition - transform.position;
 
-        // Pas depasser limites en Y
-        if ((mouvementCamera.y < 0 && transform.position.y > -10) ||
-            (mouvementCamera.y > 0 && transform.position.y < 5))
-            transform.position += new Vector3(0, mouvementCamera.y, 0) * (speed * Time.fixedDeltaTime);
+        // Bouge en X pour arriver au point, et fait sur que la caméra ne dépasse pas ses limites
+        if ((offset.x < 0 && transform.position.x > -15f) ||
+            (offset.x > 0 && transform.position.x < 15f))
+        {
+            transform.position += new Vector3(offset.x, 0, 0) * (cameraSpeed * Time.fixedDeltaTime);
+        }
+
+        // Bouge en Y pour arriver au point, et fait sur que la caméra ne dépasse pas ses limites
+        if ((offset.y < 0 && transform.position.y > -10f) ||
+            (offset.y > 0 && transform.position.y < 5f))
+        {
+            transform.position += new Vector3(0, offset.y, 0) * (cameraSpeed * Time.fixedDeltaTime);
+        }
     }
+
+    #endregion
 }

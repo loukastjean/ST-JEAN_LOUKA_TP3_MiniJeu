@@ -152,13 +152,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6cb37ed7466644496a3dfe6dba364423, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  vitesse: 0
-  jumpForce: 0
-  dashForce: 0
-  numberJumps: 0
-  canJumpWithStick: 0
   prefabBullet: {fileID: 3939283812159402724, guid: 3cf0969ea0fb64c439f0bf682a0ae442, type: 3}
   lineRenderer: {fileID: 0}
+  clipWalk: {fileID: 0}
+  clipLand: {fileID: 8300000, guid: 7b66458cd0948c543adc13a25cd39ffe, type: 3}
+  clipJump: {fileID: 0}
+  clipDash: {fileID: 8300000, guid: 40d66277887a5cc448aadff1186fb370, type: 3}
+  clipShoot: {fileID: 8300000, guid: 615a267d1a9be9e409c69631eb8344c5, type: 3}
+  clipHurt: {fileID: 8300000, guid: b6499b19651e59446b9636606f63fbf1, type: 3}
 --- !u!114 &-4328101020114064584
 MonoBehaviour:
   m_ObjectHideFlags: 0

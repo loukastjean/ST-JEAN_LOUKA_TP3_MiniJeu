@@ -13,13 +13,12 @@ public class InGameManager : MonoBehaviour
     // Les deux personnages, pour les differencier
     private Personnage player1, player2;
 
-    private float startingTime, lastTimePaused;
+    private float startingTime;
 
     // Start is called before the first frame update
     private void Start()
     {
         startingTime = Time.time;
-        lastTimePaused = -99f;
     }
 
     // Update is called once per frame
@@ -127,14 +126,6 @@ public class InGameManager : MonoBehaviour
 
     public void Pause()
     {
-        Debug.Log(Time.timeScale); // DEBUG
-
-        // Essaie de faire que les deux joueurs ne pausent pas en meme temps, keyboard fix
-        if (Time.time < lastTimePaused + 0.2f)
-            return;
-
-        lastTimePaused = Time.time;
-
         // Si en pause et donc veut "unpause"
         if (Time.timeScale == 0)
         {
@@ -145,8 +136,8 @@ public class InGameManager : MonoBehaviour
         // Si il veut pauser
         else
         {
-            pauseUI.SetActive(false); // Activer l'UI de pause
-            Debug.Log("Unpause");
+            pauseUI.SetActive(true); // Activer l'UI de pause
+            Debug.Log("Pause");
             Time.timeScale = 0;
         }
     }

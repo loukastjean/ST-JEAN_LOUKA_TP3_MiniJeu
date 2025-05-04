@@ -60,6 +60,13 @@ public class Bullet : MonoBehaviour
         return EnnemiesInContact().Count > 0;
     }
 
+    private bool TouchedGround()
+    {
+        var colliders = Physics2D.OverlapCircleAll(transform.position, rend.bounds.extents.x, LayerMask.GetMask("Ground"));
+        
+        return colliders.Length > 0;
+    }
+
     private void OnContact()
     {
         // Faire du dommage a tous les ennemis avec qui le projectile est en contact

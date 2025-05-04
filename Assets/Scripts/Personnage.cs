@@ -37,7 +37,7 @@ public class Personnage : MonoBehaviour
     
     private AudioSource audioSource;
     
-    private AudioClip clipWalk, clipShoot, clipHurt, clipJump, clipDash;
+    [SerializeField] private AudioClip clipWalk, clipLand, clipJump, clipDash, clipShoot, clipHurt;
     
 
     private void Update()
@@ -54,7 +54,7 @@ public class Personnage : MonoBehaviour
 
         animator.SetBool("isFalling", rb.velocity.y < -15f);
 
-        if (IsGrounded() && rb.velocity.y == 0)
+        if (IsGrounded() && rb.velocity.y <= 5f)
         {
             // Si il est au sol, il reprend ses 2 sauts
             numberJumps = 0;
@@ -64,6 +64,8 @@ public class Personnage : MonoBehaviour
             {
                 lastDashTime = -99f;
                 animator.SetTrigger("endJumping");
+                
+                audioSource.PlayOneShot(clipLand);
             }
         }
 
@@ -121,6 +123,7 @@ public class Personnage : MonoBehaviour
         sr = GetComponent<SpriteRenderer>();
         animator = GetComponent<Animator>();
         ingameManager = FindObjectOfType<InGameManager>();
+        audioSource = GetComponent<AudioSource>();
         
         
 
@@ -179,6 +182,8 @@ public class Personnage : MonoBehaviour
         numberJumps++;
 
         animator.SetTrigger("startJumping");
+        
+        //audioSource.PlayOneShot(clipJump); //TODO
 
         // Faire que peu importe sa velocite, il saute la meme hauteur
         rb.velocity = new Vector2(rb.velocity.x, 0);
@@ -190,6 +195,8 @@ public class Personnage : MonoBehaviour
     {
         if (Time.time < lastDashTime + 3f)
             return;
+        
+        audioSource.PlayOneShot(clipDash);
 
         if (sr.flipX)
             rb.AddForce((Vector2.left + mouvement * 0.1f).normalized * dashForce, ForceMode2D.Impulse);
@@ -229,6 +236,8 @@ public class Personnage : MonoBehaviour
         if (Mathf.Abs(direction.x) > 0f)
         {
             animator.SetBool("isWalking", true);
+            
+            //audioSource.PlayOneShot(clipWalk); //TODO
 
             // Si la direction est < 0, donc a gauche, flip le sprite
             sr.flipX = direction.x < 0f;
@@ -255,6 +264,8 @@ public class Personnage : MonoBehaviour
 
         if (direction.y < 0f && IsGrounded())
             direction.x *= 2f;
+        
+        audioSource.PlayOneShot(clipHurt);
 
         rb.AddForce(direction.normalized * (damage / 3 + 40f), ForceMode2D.Impulse);
     }
@@ -263,6 +274,8 @@ public class Personnage : MonoBehaviour
     {
         if (direction == Vector2.zero || Time.time - lastShotTime < 0.8f)
             return;
+        
+        audioSource.PlayOneShot(clipShoot);
 
         var bullet = Instantiate(prefabBullet, transform.position, Quaternion.identity).GetComponent<Bullet>();
 

@@ -426,7 +426,7 @@ GameObject:
   - component: {fileID: 93295175}
   - component: {fileID: 93295174}
   m_Layer: 5
-  m_Name: Gagnant
+  m_Name: Winner
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -851,7 +851,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e1721ee44c97d460c81ea93ebc6331e6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  InGameMenu: {fileID: 1883505282}
+  inGameMenu: {fileID: 1883505282}
 --- !u!114 &152108077
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3911,7 +3911,7 @@ MonoBehaviour:
   player1Lives: {fileID: 47504743}
   player2Lives: {fileID: 1942557317}
   timer: {fileID: 386296286}
-  gagnant: {fileID: 93295174}
+  winnerText: {fileID: 93295174}
   inGameMenu: {fileID: 1883505282}
   pauseMenu: {fileID: 1443026724}
   gameOverMenu: {fileID: 1052472936}

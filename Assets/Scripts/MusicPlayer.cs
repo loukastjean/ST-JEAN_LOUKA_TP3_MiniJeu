@@ -4,36 +4,65 @@ using UnityEngine;
 
 public class MusicPlayer : MonoBehaviour
 {
-    private AudioClip[] audioClips;
+    #region Fields
+
     private AudioSource audioSource;
-    private List<AudioClip> availableAudioClips;
-    private AudioClip currentAudioClip;
+    private AudioClip[] allClips;
+    private List<AudioClip> availableClips;
+    private AudioClip currentClip;
 
+    #endregion
 
-    // Start is called before the first frame update
+    #region Unity Methods
+
     private void Start()
     {
-        audioSource = GetComponent<AudioSource>();
-
-        audioClips = Resources.LoadAll<AudioClip>("Musics");
-        availableAudioClips = audioClips.ToList();
+        InitializeAudio();
     }
 
-    // Update is called once per frame
     private void Update()
     {
+        // Si la musique précédente a finie
         if (!audioSource.isPlaying)
-            SelectRandomAudioClip();
+            PlayNextClip();
 
-        if (availableAudioClips.Count == 0)
-            availableAudioClips = audioClips.ToList();
+        // Si la liste de musiques a jouer est vide, refaire la "randomization" des musiques
+        if (availableClips.Count == 0)
+            ResetAvailableClips();
     }
 
-    private void SelectRandomAudioClip()
+    #endregion
+
+    #region Audio Logic
+
+    // Recupere les musiques dans le dossier Resources/Musics dynamiquement
+    private void InitializeAudio()
     {
-        currentAudioClip = availableAudioClips[Random.Range(0, availableAudioClips.Count)];
-        availableAudioClips.Remove(currentAudioClip);
-
-        audioSource.PlayOneShot(currentAudioClip);
+        audioSource = GetComponent<AudioSource>();
+        allClips = Resources.LoadAll<AudioClip>("Musics");
+        availableClips = allClips.ToList();
     }
+
+    // Joue le prochain clip audio
+    private void PlayNextClip()
+    {
+        currentClip = GetRandomClip();
+        audioSource.PlayOneShot(currentClip);
+    }
+
+    // Retourne un clip audio random dans les availableaudios
+    private AudioClip GetRandomClip()
+    {
+        int index = Random.Range(0, availableClips.Count);
+        AudioClip clip = availableClips[index];
+        availableClips.RemoveAt(index);
+        return clip;
+    }
+    
+    private void ResetAvailableClips()
+    {
+        availableClips = allClips.ToList();
+    }
+
+    #endregion
 }

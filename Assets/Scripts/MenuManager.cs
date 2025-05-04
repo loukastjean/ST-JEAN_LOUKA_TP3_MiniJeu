@@ -6,156 +6,175 @@ using UnityEngine.UI;
 
 public class MenuManager : MonoBehaviour
 {
-    [SerializeField] private Button btnPlay, btnInfos, btnQuit, btnStartGame, btnCloseInfos;
-    [SerializeField] private GameObject mainMenu, characterSelectionMenu, inGameMenu, infosMenu;
-    [SerializeField] private List<Button> player1Characters, player2Characters;
+    #region Serialized Fields
+
+    [Header("Buttons")]
+    [SerializeField] private Button btnPlay;
+    [SerializeField] private Button btnInfos;
+    [SerializeField] private Button btnQuit;
+    [SerializeField] private Button btnStartGame;
+    [SerializeField] private Button btnCloseInfos;
+
+    [Header("Menus")]
+    [SerializeField] private GameObject mainMenu;
+    [SerializeField] private GameObject characterSelectionMenu;
+    [SerializeField] private GameObject inGameMenu;
+    [SerializeField] private GameObject infosMenu;
+
+    [Header("Character Selection")]
+    [SerializeField] private List<Button> player1Characters;
+    [SerializeField] private List<Button> player2Characters;
     [SerializeField] private List<GameObject> prefabs;
 
-    private List<Button> buttons;
+    #endregion
+
+    #region Private Fields
+
+    private List<Button> allCharacterButtons;
     private EventSystem eventSystem;
 
-    // L'index des boutons personnages selectionnes par les joueurs
-    private int player1IndexSelectedCharacter, player2IndexSelectedCharacter;
+    private int player1SelectedIndex;
+    private int player2SelectedIndex;
 
-    // Start is called before the first frame update
+    #endregion
+
+    #region Unity Methods
+
     private void Start()
     {
-        // Pour detecter le bouton selectionne en ce moment
+        // Eventsystem pour savoir sur quel bouton est "highlighted"
         eventSystem = EventSystem.current;
 
         LoadMainMenu();
-
-        SetButtonEvents();
+        SetButtonCallbacks();
     }
 
+    #endregion
 
-    private void SetButtonEvents()
+    #region Menu Loading
+
+    private void LoadMainMenu()
     {
-        // Ajouter un listener sur btnJouer
-        btnPlay.onClick.AddListener(Play);
-        // Ajouter un listener sur btnInfos
-        btnInfos.onClick.AddListener(Infos);
-        // Ajouter un listener sur btnQuitter
-        btnQuit.onClick.AddListener(Quit);
-        // Ajouter un listener sur le bouton de fermer les infos
-        btnCloseInfos.onClick.AddListener(CloseInfos);
-
-        // S'abonner a l'evenement de clic de chaque bouton
-        foreach (var btnCharacter in player1Characters) btnCharacter.onClick.AddListener(SelectCharacter1);
-        foreach (var btnCharacter in player2Characters) btnCharacter.onClick.AddListener(SelectCharacter2);
-
-        btnStartGame.onClick.AddListener(StartGame);
+        mainMenu.SetActive(true);
+        characterSelectionMenu.SetActive(false);
+        btnPlay.Select();
     }
 
     private void LoadCharacterSelectionMenu()
     {
-        // La liste de boutons comporte les boutons des deux joueurs
-        buttons = player1Characters.Concat(player2Characters).ToList();
+        allCharacterButtons = player1Characters.Concat(player2Characters).ToList();
 
-        // Selectionner le joueur bleu par defaut
-        buttons[0].Select();
-
-        // active characterselection et desactive MainMenu
-        characterSelectionMenu.SetActive(true);
         mainMenu.SetActive(false);
+        characterSelectionMenu.SetActive(true);
+        // Selectionne le character bleu du joueur 1
+        allCharacterButtons[0].Select();
 
-        SetButtonColors();
+        UpdateCharacterButtonColors();
     }
 
-    private void LoadMainMenu()
+    #endregion
+
+    #region Button Setup
+
+    // S'abonne au onclick event de tous les boutons du menu
+    private void SetButtonCallbacks()
     {
-        // Par defaut selectionne Jouer
-        btnPlay.Select();
+        btnPlay.onClick.AddListener(LoadCharacterSelectionMenu);
+        btnInfos.onClick.AddListener(OpenInfos);
+        btnQuit.onClick.AddListener(QuitGame);
+        btnCloseInfos.onClick.AddListener(CloseInfos);
+        btnStartGame.onClick.AddListener(StartGame);
 
-        // desactiver characterselection et active MainMenu
-        characterSelectionMenu.SetActive(false);
-        mainMenu.SetActive(true);
+        foreach (var btn in player1Characters)
+            btn.onClick.AddListener(SelectCharacter1);
+
+        foreach (var btn in player2Characters)
+            btn.onClick.AddListener(SelectCharacter2);
     }
 
-    private void Play()
-    {
-        LoadCharacterSelectionMenu();
-    }
+    #endregion
 
-    private void Infos()
+    #region Button Actions
+
+    private void OpenInfos()
     {
         infosMenu.SetActive(true);
-        btnPlay.interactable = false;
-        btnInfos.interactable = false;
-        btnQuit.interactable = false;
+        SetMainMenuButtonsInteractable(false);
         btnCloseInfos.Select();
     }
 
     private void CloseInfos()
     {
         infosMenu.SetActive(false);
-        btnPlay.interactable = true;
-        btnInfos.interactable = true;
-        btnQuit.interactable = true;
+        SetMainMenuButtonsInteractable(true);
         btnInfos.Select();
     }
 
-    private void Quit()
+    // Si les boutons du mainMenu doivent être interactable (selon si le menu info est ouvert)
+    private void SetMainMenuButtonsInteractable(bool state)
+    {
+        btnPlay.interactable = state;
+        btnInfos.interactable = state;
+        btnQuit.interactable = state;
+    }
+
+    private void QuitGame()
     {
         Application.Quit();
     }
 
     private void StartGame()
     {
-        // Instancier joueur 1
-        Instantiate(
-            prefabs[player1IndexSelectedCharacter],
-            new Vector2(-8, 1),
-            Quaternion.identity
-        ).GetComponent<Personnage>();
+        // Instantiate Player 1
+        Personnage player1 = Instantiate(prefabs[player1SelectedIndex], new Vector2(-8, 1), Quaternion.identity)
+            .GetComponent<Personnage>();
 
-        // Instancier joueur 2
-        Instantiate(
-            prefabs[player2IndexSelectedCharacter],
-            new Vector2(8, 1),
-            Quaternion.identity
-        ).GetComponent<Personnage>();
-        
-        // Cree le UI de la partie
-        FindObjectOfType<InGameManager>().Creation();
-        
+        // Instantiate Player 2
+        Personnage player2 = Instantiate(prefabs[player2SelectedIndex], new Vector2(8, 1), Quaternion.identity)
+            .GetComponent<Personnage>();
+
+        // Initialize game UI
+        FindObjectOfType<InGameManager>().Creation(player1, player2);
+
         characterSelectionMenu.SetActive(false);
     }
 
+    #endregion
+
+    #region Character Selection
+
     private void SelectCharacter1()
     {
-        var btnCurrentlySelectedCharacter1 = eventSystem.currentSelectedGameObject.GetComponent<Button>();
-        player1IndexSelectedCharacter = player1Characters.IndexOf(btnCurrentlySelectedCharacter1);
-
-        SetButtonColors();
+        var selectedButton = eventSystem.currentSelectedGameObject.GetComponent<Button>();
+        player1SelectedIndex = player1Characters.IndexOf(selectedButton);
+        UpdateCharacterButtonColors();
     }
 
     private void SelectCharacter2()
     {
-        var btnCurrentlySelectedCharacter2 = eventSystem.currentSelectedGameObject.GetComponent<Button>();
-        player2IndexSelectedCharacter = player2Characters.IndexOf(btnCurrentlySelectedCharacter2);
-
-        SetButtonColors();
+        var selectedButton = eventSystem.currentSelectedGameObject.GetComponent<Button>();
+        player2SelectedIndex = player2Characters.IndexOf(selectedButton);
+        UpdateCharacterButtonColors();
     }
 
-    private void SetButtonColors()
+    private void UpdateCharacterButtonColors()
     {
-        foreach (var button in buttons)
-            
-            // Si le bouton est selectionne, l'afficher pleinement
-            if (button == player1Characters[player1IndexSelectedCharacter] ||
-                button == player2Characters[player2IndexSelectedCharacter])
-            {
-                var colors = button.colors;
-                colors.normalColor = new Color(1f, 1f, 1f);
-                button.colors = colors;
-            }
-            // Si il n'est pas selectionne, le griser
-            else
-            {
-                var colors = button.colors;
-                colors.normalColor = new Color(0.66f, 0.66f, 0.66f);
-                button.colors = colors;
-            }
+        foreach (var button in allCharacterButtons)
+        {
+            var colors = button.colors;
+
+            bool isSelected =
+                button == player1Characters[player1SelectedIndex] ||
+                button == player2Characters[player2SelectedIndex];
+
+            // Si le character est selectionné, le mettre blanc, sinon grisé
+            colors.normalColor = isSelected
+                ? Color.white
+                : new Color(0.66f, 0.66f, 0.66f);
+
+            button.colors = colors;
+        }
     }
+
+    #endregion
 }

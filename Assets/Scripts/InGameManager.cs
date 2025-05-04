@@ -5,52 +5,85 @@ using UnityEngine.UI;
 
 public class InGameManager : MonoBehaviour
 {
-    // UI
-    [SerializeField] private TMP_Text player1Damage, player2Damage, player1Lives, player2Lives, timer, gagnant;
-    [SerializeField] private GameObject inGameMenu, pauseMenu, gameOverMenu;
+    #region Serialized Fields
+
+    [Header("UI Elements")]
+    [SerializeField] private TMP_Text player1Damage;
+    [SerializeField] private TMP_Text player2Damage;
+    [SerializeField] private TMP_Text player1Lives;
+    [SerializeField] private TMP_Text player2Lives;
+    [SerializeField] private TMP_Text timer;
+    [SerializeField] private TMP_Text winnerText;
+
+    [Header("Menus")]
+    [SerializeField] private GameObject inGameMenu;
+    [SerializeField] private GameObject pauseMenu;
+    [SerializeField] private GameObject gameOverMenu;
+
     [SerializeField] private Button btnMainMenu;
 
-    // Les deux personnages, pour les differencier
-    private Personnage player1, player2;
+    #endregion
 
-    private float startingTime;
+    #region Private Fields
 
-    // Update is called once per frame
+    private Personnage player1;
+    private Personnage player2;
+    private float gameStartTime;
+
+    #endregion
+
+    #region Unity Methods
+
     private void Update()
     {
-        // Pendant que le jeu n'est pas commence, ne pas continuer dans l'update
-        if (!inGameMenu.activeSelf)
+        // Si la partie n'a pas encore commencée
+        if (!inGameMenu.activeSelf || gameOverMenu.activeSelf)
             return;
 
-        // Si aucun des personnages n'a perdu toutes ses vies
-        // Si la partie n'a pas ete finie avant
-        if (!VerifyGameOver())
+        // Si la partie est terminée
+        if (!CheckGameOver())
         {
-            Update_Timer();
-            Update_Damage();
-            Update_Lives();
+            UpdateTimer();
+            UpdateDamageUI();
+            UpdateLivesUI();
         }
     }
 
-    public void Creation()
+    #endregion
+
+    #region Initialization
+
+    // Set les informations au début du match
+    public void Creation(Personnage _player1, Personnage _player2)
     {
-        startingTime = Time.time;
-        
+        gameStartTime = Time.time;
+
         inGameMenu.SetActive(true);
+
+        player1 = _player1;
+        player2 = _player2;
         
-        // Set les joueurs dans le Menu
-        SetPlayers();
-        
-        // Assigner les inputs pour que les deux puissent controler leur personnage
         InputSchemeAssigner.AssignSchemes();
-        
+
         player1.Creation();
         player2.Creation();
         
+        // Fait que le joueur 1, vu qu'il est a gauche, vise a droite
+        player1.aim = Vector2.right;
+        
+        // Fait que le joueur 2, vu qu'il est a droite, vise a gauche et est inversé
+        player2.aim = Vector2.left;
+        player2.sr.flipX = true;
+
+        AssignLineRenderers();
+    }
+
+    private void AssignLineRenderers()
+    {
         player1.lineRenderer = player1.GetComponent<LineRenderer>();
         player2.lineRenderer = player2.GetComponent<LineRenderer>();
 
-        // Set the colors
+        // Assigne la couleur de la ligne de visée aux joueurs en fonction de leur coté
         player1.lineRenderer.startColor = Color.blue;
         player1.lineRenderer.endColor = Color.blue;
         
@@ -58,107 +91,87 @@ public class InGameManager : MonoBehaviour
         player2.lineRenderer.endColor = Color.red;
     }
 
-    public void SetPlayers()
-    {
-        var players = FindObjectsOfType<Personnage>();
+    #endregion
 
-        // Le joueur 1 est toujours a gauche et le joueur 2 a droite
-        if (players[0].transform.position.x < players[1].transform.position.x)
-        {
-            player1 = players[0];
-            player2 = players[1];
-        }
-        else
-        {
-            player1 = players[1];
-            player2 = players[0];
-        }
+    #region UI Updates
+
+    // Affiche et update le timer
+    private void UpdateTimer()
+    {
+        float elapsed = Time.time - gameStartTime;
+        int minutes = Mathf.FloorToInt(elapsed / 60);
+        int seconds = Mathf.FloorToInt(elapsed % 60);
+        timer.text = $"{minutes:D2}:{seconds:D2}";
     }
 
-    private void Update_Timer()
+    // Update l'information sur le UI au sujet des dégats subis
+    private void UpdateDamageUI()
     {
-        // Calculer les minutes et secondes écoulées depuis le début du jeu
-        var minutes = Mathf.FloorToInt((Time.time - startingTime) / 60);
-        var secondes = Mathf.FloorToInt((Time.time - startingTime) % 60);
-
-        // Afficher le timer dans le format MM:SS
-        timer.text = $"{minutes:D2}:{secondes:D2}";
-    }
-
-    private void Update_Damage()
-    {
-        // Affiche les dommages des joueurs
         player1Damage.text = $"{player1.damage}%";
         player2Damage.text = $"{player2.damage}%";
     }
 
-    private void Update_Lives()
+    // Update l'information sur le UI au sujet des vies perdues
+    private void UpdateLivesUI()
     {
-        // Affiche les vies des joueurs
         player1Lives.text = $"{player1.lives} vies";
         player2Lives.text = $"{player2.lives} vies";
     }
 
-    private bool VerifyGameOver()
+    #endregion
+
+    #region Game State
+
+    // Verifie si c'est la fin de la partie
+    private bool CheckGameOver()
     {
-        // Vérifier si un des 2 joueurs a perdu ET
-        // que c'est la premiere fois que c'est gameover
-        if ((player1.lives <= 0 || player2.lives <= 0) && !gameOverMenu.activeSelf)
+        // Si c'est la premiere frame qu'un joueur est a 0 vies
+        if (player1.lives <= 0 || player2.lives <= 0)
         {
-            //InGameMenu.SetActive(false); // Désactiver l'UI de jeu
-            gameOverMenu.SetActive(true); // Activer l'UI de gameover
-
-            gagnant.text = "Gagnant: Joueur ";
-
-            // Afficher le gagnant avec sa couleur de joueur
-            if (player2.lives <= 0)
-            {
-                gagnant.text += "1";
-                gagnant.color = new Color(0f, 0.2666667f, 0.9647059f);
-            }
-            else
-            {
-                gagnant.text += "2";
-                gagnant.color = new Color(0.772549f, 0f, 0f);
-            }
-
-
-            // Update une derniere fois le UI, sinon on dirait que le joueur avait encore une vie
-            Update_Damage();
-            Update_Lives();
-
-            // S'abonner au "event" d'appuyer sur le menu principal
-            btnMainMenu.onClick.AddListener(ReloadScene);
+            ShowGameOverMenu();
+            return true;
         }
 
-        // Si un des joueurs a perdu
-        return player1.lives <= 0 || player2.lives <= 0;
+        return false;
     }
 
+    private void ShowGameOverMenu()
+    {
+        gameOverMenu.SetActive(true);
+        
+        // Pour etre sur que les vies et dommages sur le UI montrent 0 vies 0 dommages, pas ce qu'il y avait juste avant le gameover
+        UpdateDamageUI();
+        UpdateLivesUI();
+
+        winnerText.text = "Gagnant: Joueur ";
+
+        if (player2.lives <= 0)
+        {
+            winnerText.text += "1";
+            winnerText.color = new Color(0f, 0.27f, 0.96f);
+        }
+        else
+        {
+            winnerText.text += "2";
+            winnerText.color = new Color(0.77f, 0f, 0f);
+        }
+
+        btnMainMenu.onClick.AddListener(ReloadScene);
+    }
 
     private void ReloadScene()
     {
-        // Retourne au menu principal en faisant un "reload" de scene
-        var currentScene = SceneManager.GetActiveScene();
-        SceneManager.LoadScene(currentScene.buildIndex);
+        // Rejoue la scene du jeu pour revenir au menu principal
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
-
 
     public void Pause()
     {
-        // Si en pause et donc veut "unpause"
-        if (Time.timeScale == 0)
-        {
-            pauseMenu.SetActive(false); // Desactiver l'UI de pause
-            Debug.Log("Unpause");
-            Time.timeScale = 1;
-        }
-        // Si il veut pauser
-        else
-        {
-            pauseMenu.SetActive(true); // Activer l'UI de pause
-            Debug.Log("Pause");
-            Time.timeScale = 0;
-        }
+        // Si le jeu est pausé, unpause, sinon pause
+        bool isPaused = Time.timeScale == 0;
+        pauseMenu.SetActive(!isPaused);
+        Time.timeScale = isPaused ? 1 : 0;
     }
+
+    #endregion
 }

@@ -123,6 +123,19 @@ public class Personnage : MonoBehaviour
     }
 
     #endregion
+    
+    #region Destruction
+    
+    public void RemoveInputs()
+    {
+        inputReader.LS_m.callback -= LS_moved;
+        inputReader.RT.callback -= RT_moved;
+        inputReader.BE.callback -= BE_onClicked;
+        inputReader.RS_m.callback -= RS_moved;
+        inputReader.Menu.callback -= Menu_OnClicked;
+    }
+    
+    #endregion
 
     #region Input Callbacks
 
@@ -231,10 +244,10 @@ public class Personnage : MonoBehaviour
 
         audioSource.PlayOneShot(clipShoot);
 
-        var bullet = Instantiate(prefabBullet, transform.position, Quaternion.identity)
+        var bullet = Instantiate(prefabBullet, rb.worldCenterOfMass, Quaternion.identity)
             .GetComponent<Bullet>();
 
-        bullet.SetAttributes(aim, transform.position, this);
+        bullet.SetAttributes(aim, rb.worldCenterOfMass, this);
 
         lastShotTime = Time.time;
     }
@@ -266,8 +279,8 @@ public class Personnage : MonoBehaviour
     // Dessine la ligne de visée du personnage
     private void UpdateLineRenderer()
     {
-        lineRenderer.SetPosition(0, transform.position);
-        lineRenderer.SetPosition(1, transform.position + new Vector3(aim.x, aim.y).normalized * 100f);
+        lineRenderer.SetPosition(0, rb.worldCenterOfMass);
+        lineRenderer.SetPosition(1, rb.worldCenterOfMass + new Vector2(aim.x, aim.y).normalized * 100f);
     }
     
     private void HandleShooting()

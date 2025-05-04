@@ -7,7 +7,7 @@ public class InGameManager : MonoBehaviour
 {
     // UI
     [SerializeField] private TMP_Text player1Damage, player2Damage, player1Lives, player2Lives, timer, gagnant;
-    [SerializeField] private GameObject inGameUI, pauseUI, gameOverUI;
+    [SerializeField] private GameObject inGameMenu, pauseMenu, gameOverMenu;
     [SerializeField] private Button btnMainMenu;
 
     // Les deux personnages, pour les differencier
@@ -15,17 +15,11 @@ public class InGameManager : MonoBehaviour
 
     private float startingTime;
 
-    // Start is called before the first frame update
-    private void Start()
-    {
-        startingTime = Time.time;
-    }
-
     // Update is called once per frame
     private void Update()
     {
         // Pendant que le jeu n'est pas commence, ne pas continuer dans l'update
-        if (!inGameUI.activeSelf)
+        if (!inGameMenu.activeSelf)
             return;
 
         // Si aucun des personnages n'a perdu toutes ses vies
@@ -36,6 +30,32 @@ public class InGameManager : MonoBehaviour
             Update_Damage();
             Update_Lives();
         }
+    }
+
+    public void Creation()
+    {
+        startingTime = Time.time;
+        
+        inGameMenu.SetActive(true);
+        
+        // Set les joueurs dans le Menu
+        SetPlayers();
+        
+        // Assigner les inputs pour que les deux puissent controler leur personnage
+        InputSchemeAssigner.AssignSchemes();
+        
+        player1.Creation();
+        player2.Creation();
+        
+        player1.lineRenderer = player1.GetComponent<LineRenderer>();
+        player2.lineRenderer = player2.GetComponent<LineRenderer>();
+
+        // Set the colors
+        player1.lineRenderer.startColor = Color.blue;
+        player1.lineRenderer.endColor = Color.blue;
+        
+        player2.lineRenderer.startColor = Color.red;
+        player2.lineRenderer.endColor = Color.red;
     }
 
     public void SetPlayers()
@@ -83,10 +103,10 @@ public class InGameManager : MonoBehaviour
     {
         // Vérifier si un des 2 joueurs a perdu ET
         // que c'est la premiere fois que c'est gameover
-        if ((player1.lives <= 0 || player2.lives <= 0) && !gameOverUI.activeSelf)
+        if ((player1.lives <= 0 || player2.lives <= 0) && !gameOverMenu.activeSelf)
         {
-            //InGameUI.SetActive(false); // Désactiver l'UI de jeu
-            gameOverUI.SetActive(true); // Activer l'UI de gameover
+            //InGameMenu.SetActive(false); // Désactiver l'UI de jeu
+            gameOverMenu.SetActive(true); // Activer l'UI de gameover
 
             gagnant.text = "Gagnant: Joueur ";
 
@@ -129,14 +149,14 @@ public class InGameManager : MonoBehaviour
         // Si en pause et donc veut "unpause"
         if (Time.timeScale == 0)
         {
-            pauseUI.SetActive(false); // Desactiver l'UI de pause
+            pauseMenu.SetActive(false); // Desactiver l'UI de pause
             Debug.Log("Unpause");
             Time.timeScale = 1;
         }
         // Si il veut pauser
         else
         {
-            pauseUI.SetActive(true); // Activer l'UI de pause
+            pauseMenu.SetActive(true); // Activer l'UI de pause
             Debug.Log("Pause");
             Time.timeScale = 0;
         }

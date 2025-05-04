@@ -3527,9 +3527,9 @@ MonoBehaviour:
   player2Lives: {fileID: 1942557317}
   timer: {fileID: 386296286}
   gagnant: {fileID: 93295174}
-  inGameUI: {fileID: 1883505282}
-  pauseUI: {fileID: 1443026724}
-  gameOverUI: {fileID: 1052472936}
+  inGameMenu: {fileID: 1883505282}
+  pauseMenu: {fileID: 1443026724}
+  gameOverMenu: {fileID: 1052472936}
   btnMainMenu: {fileID: 1552215264}
 --- !u!114 &1196218487
 MonoBehaviour:
@@ -3547,9 +3547,9 @@ MonoBehaviour:
   btnSettings: {fileID: 1315273747}
   btnQuit: {fileID: 656491812}
   btnStartGame: {fileID: 2072654685}
-  MainMenu: {fileID: 503118361}
-  CharacterSelectionMenu: {fileID: 63825850}
-  InGameMenu: {fileID: 1883505282}
+  mainMenu: {fileID: 503118361}
+  characterSelectionMenu: {fileID: 63825850}
+  inGameMenu: {fileID: 1883505282}
   player1Characters:
   - {fileID: 1887545717}
   - {fileID: 1495866138}

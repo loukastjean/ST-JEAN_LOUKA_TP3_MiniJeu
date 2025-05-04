@@ -6,8 +6,8 @@ public class CameraManager : MonoBehaviour
 
     // Les deux personnages
     private Personnage[] players;
-    private float speed;
     
+    private float speed;
     private bool justAppeared;
 
     // Start is called before the first frame update
@@ -50,12 +50,12 @@ public class CameraManager : MonoBehaviour
         // Point milieu entre les deux personnages
         playersPositionDifference /= 2;
         
-        // No clue honnetement
+        // Calcule la destination qu'il faut atteindre avec la camera en prennant en compte sa position et celle des joueurs
         Vector3 destination = new(playersPositionDifference.x + players[1].transform.position.x,
             playersPositionDifference.y + players[1].transform.position.y);
         
-        
-        Vector3 mouvementCamera = new(destination.x - transform.position.x, destination.y - transform.position.y);
+        // Le mouvement que la camera doit faire pour aller au point milieu
+        Vector3 mouvementCamera = destination - transform.position;
 
         // Pas depasser limites en X
         if ((mouvementCamera.x < 0 && transform.position.x > -15) ||

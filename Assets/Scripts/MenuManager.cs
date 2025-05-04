@@ -7,7 +7,7 @@ using UnityEngine.UI;
 public class MenuManager : MonoBehaviour
 {
     [SerializeField] private Button btnPlay, btnSettings, btnQuit, btnStartGame;
-    [SerializeField] private GameObject MainMenu, CharacterSelectionMenu, InGameMenu;
+    [SerializeField] private GameObject mainMenu, characterSelectionMenu, inGameMenu;
     [SerializeField] private List<Button> player1Characters, player2Characters;
     [SerializeField] private List<GameObject> prefabs;
 
@@ -20,6 +20,7 @@ public class MenuManager : MonoBehaviour
     // Start is called before the first frame update
     private void Start()
     {
+        // Pour detecter le bouton selectionne en ce moment
         eventSystem = EventSystem.current;
 
         LoadMainMenu();
@@ -53,8 +54,8 @@ public class MenuManager : MonoBehaviour
         buttons[0].Select();
 
         // active characterselection et desactive MainMenu
-        CharacterSelectionMenu.SetActive(true);
-        MainMenu.SetActive(false);
+        characterSelectionMenu.SetActive(true);
+        mainMenu.SetActive(false);
 
         SetButtonColors();
     }
@@ -63,19 +64,13 @@ public class MenuManager : MonoBehaviour
     {
         buttons = new List<Button> { btnPlay, btnSettings, btnQuit };
 
+        // Par defaut selectionne Jouer
         buttons[0].Select();
 
         // desactiver characterselection et active MainMenu
-        CharacterSelectionMenu.SetActive(false);
-        MainMenu.SetActive(true);
+        characterSelectionMenu.SetActive(false);
+        mainMenu.SetActive(true);
     }
-
-    private void Menu_OnClicked()
-    {
-        if (CharacterSelectionMenu.activeSelf)
-            LoadMainMenu();
-    }
-
 
     private void Play()
     {
@@ -94,44 +89,23 @@ public class MenuManager : MonoBehaviour
     private void StartGame()
     {
         // Instancier joueur 1
-        var player1 = Instantiate(
+        Instantiate(
             prefabs[player1IndexSelectedCharacter],
             new Vector2(-8, 1),
             Quaternion.identity
         ).GetComponent<Personnage>();
 
         // Instancier joueur 2
-        var player2 = Instantiate(
+        Instantiate(
             prefabs[player2IndexSelectedCharacter],
             new Vector2(8, 1),
             Quaternion.identity
         ).GetComponent<Personnage>();
-
-        player1.Creation();
-        player2.Creation();
-
-        // Assigner les inputs pour que les deux puissent controler leur personnage
-        InputSchemeAssigner.AssignSchemes();
-
-        InGameMenu.SetActive(true);
-        CharacterSelectionMenu.SetActive(false);
-
-        // Add a LineRenderer component
-        player1.lineRenderer = player1.GetComponent<LineRenderer>();
-
-        // Set the color
-        player1.lineRenderer.startColor = Color.blue;
-        player1.lineRenderer.endColor = Color.blue;
-
-        // Add a LineRenderer component
-        player2.lineRenderer = player2.GetComponent<LineRenderer>();
-
-        // Set the color
-        player2.lineRenderer.startColor = Color.red;
-        player2.lineRenderer.endColor = Color.red;
-
-        // Set les joueurs dans le UI In Game
-        FindObjectOfType<InGameManager>().SetPlayers();
+        
+        // Cree le UI de la partie
+        FindObjectOfType<InGameManager>().Creation();
+        
+        characterSelectionMenu.SetActive(false);
     }
 
     private void SelectCharacter1()
@@ -140,8 +114,6 @@ public class MenuManager : MonoBehaviour
         player1IndexSelectedCharacter = player1Characters.IndexOf(btnCurrentlySelectedCharacter1);
 
         SetButtonColors();
-
-        Debug.Log("Player 1 selected: " + player1IndexSelectedCharacter);
     }
 
     private void SelectCharacter2()
@@ -150,8 +122,6 @@ public class MenuManager : MonoBehaviour
         player2IndexSelectedCharacter = player2Characters.IndexOf(btnCurrentlySelectedCharacter2);
 
         SetButtonColors();
-
-        Debug.Log("Player 2 selected: " + player2IndexSelectedCharacter);
     }
 
     private void SetButtonColors()

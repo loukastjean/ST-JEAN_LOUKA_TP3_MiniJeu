@@ -2,43 +2,52 @@ using UnityEngine;
 
 public class Personnage : MonoBehaviour
 {
-    [SerializeField] private GameObject prefabBullet;
-
-    private float vitesse, jumpForce, dashForce;
-    private int numberJumps;
-    private bool canJumpWithStick;
+    [SerializeField]
+    private GameObject prefabBullet;
+    private SpriteRenderer sr;
+    private Rigidbody2D rb;
+    private PlayerInputReader inputReader;
+    private InGameManager ingameManager;
+    private Animator animator;
+    private AudioSource audioSource;
     
     public LineRenderer lineRenderer;
-    private Vector2 aim = Vector2.zero;
-    private Animator animator;
+    
+    [SerializeField]
+    private AudioClip clipWalk,
+        clipLand,
+        clipJump,
+        clipDash,
+        clipShoot,
+        clipHurt;
+
+    private float vitesse,
+        jumpForce,
+        dashForce,
+        lastDashTime,
+        lastShotTime;
+    
+    
+    private int numberJumps;
+    
+    
+    private bool canJumpWithStick,
+        previouslyGrounded,
+        wantsToShoot;
+    
+    
+    private Vector2 aim;
+    private Vector2 mouvement;
+    
 
     private readonly Vector2 feetPosition = new(-0.75f, -2.56f);
     private readonly float feetWidth = 1.5f;
-
-    private InGameManager ingameManager;
-
-    // Référence au PlayerInputReader
-    private PlayerInputReader inputReader;
-    private float lastDashTime;
-    private float lastShotTime;
-
-    private Vector2 mouvement;
-
-    private bool previouslyGrounded;
-
-    private Rigidbody2D rb;
-
     private readonly Vector2 respawnPosition = new(0, 10f);
-    private SpriteRenderer sr;
-    private bool wantsToShoot;
-
+    
+    
     public float damage { get; private set; }
     public int lives { get; private set; }
-    
-    private AudioSource audioSource;
-    
-    [SerializeField] private AudioClip clipWalk, clipLand, clipJump, clipDash, clipShoot, clipHurt;
-    
+
 
     private void Update()
     {
@@ -47,7 +56,10 @@ public class Personnage : MonoBehaviour
 
         // Update the point positions of the line renderer
         lineRenderer.SetPosition(0, transform.position);
-        lineRenderer.SetPosition(1, transform.position + new Vector3(aim.x, aim.y).normalized * 100f);
+        lineRenderer.SetPosition(
+            1,
+            transform.position + new Vector3(aim.x, aim.y).normalized * 100f
+        );
 
         if (wantsToShoot)
             Shoot(aim);
@@ -64,7 +76,7 @@ public class Personnage : MonoBehaviour
             {
                 lastDashTime = -99f;
                 animator.SetTrigger("endJumping");
-                
+
                 audioSource.PlayOneShot(clipLand);
             }
         }
@@ -82,7 +94,6 @@ public class Personnage : MonoBehaviour
         if ((mouvement.x > 0 && rb.velocity.x < 0) || (mouvement.x < 0 && rb.velocity.x > 0))
             rb.velocity += new Vector2(mouvement.x * vitesse * Time.fixedDeltaTime * 5f, 0);
     }
-
 
     // Left stick
     private void LS_moved(Vector2 direction)
@@ -114,7 +125,6 @@ public class Personnage : MonoBehaviour
         ingameManager.Pause();
     }
 
-
     public void Creation()
     {
         // Assigner le PlayerInputReader
@@ -124,8 +134,6 @@ public class Personnage : MonoBehaviour
         animator = GetComponent<Animator>();
         ingameManager = FindObjectOfType<InGameManager>();
         audioSource = GetComponent<AudioSource>();
-        
-        
 
         // S'abonner aux inputs
         SetInputs();
@@ -168,6 +176,8 @@ public class Personnage : MonoBehaviour
         vitesse = 20f;
         jumpForce = 35f;
         dashForce = 30f;
+        
+        aim = Vector2.zero;
 
         lives = 5;
     }
@@ -182,7 +192,7 @@ public class Personnage : MonoBehaviour
         numberJumps++;
 
         animator.SetTrigger("startJumping");
-        
+
         //audioSource.PlayOneShot(clipJump); //TODO
 
         // Faire que peu importe sa velocite, il saute la meme hauteur
@@ -195,13 +205,19 @@ public class Personnage : MonoBehaviour
     {
         if (Time.time < lastDashTime + 3f)
             return;
-        
+
         audioSource.PlayOneShot(clipDash);
 
         if (sr.flipX)
-            rb.AddForce((Vector2.left + mouvement * 0.1f).normalized * dashForce, ForceMode2D.Impulse);
+            rb.AddForce(
+                (Vector2.left + mouvement * 0.1f).normalized * dashForce,
+                ForceMode2D.Impulse
+            );
         else
-            rb.AddForce((Vector2.right + mouvement * 0.1f).normalized * dashForce, ForceMode2D.Impulse);
+            rb.AddForce(
+                (Vector2.right + mouvement * 0.1f).normalized * dashForce,
+                ForceMode2D.Impulse
+            );
 
         lastDashTime = Time.time;
     }
@@ -214,7 +230,6 @@ public class Personnage : MonoBehaviour
 
         if (rb.velocity.y > 0)
             rb.gravityScale = 7f;
-
         else
             rb.gravityScale = 12f;
 
@@ -231,12 +246,11 @@ public class Personnage : MonoBehaviour
         else
             direction.y = 0;
 
-
         // Si il bouge en X, le faire marcher
         if (Mathf.Abs(direction.x) > 0f)
         {
             animator.SetBool("isWalking", true);
-            
+
             //audioSource.PlayOneShot(clipWalk); //TODO
 
             // Si la direction est < 0, donc a gauche, flip le sprite
@@ -264,7 +278,7 @@ public class Personnage : MonoBehaviour
 
         if (direction.y < 0f && IsGrounded())
             direction.x *= 2f;
-        
+
         audioSource.PlayOneShot(clipHurt);
 
         rb.AddForce(direction.normalized * (damage / 3 + 40f), ForceMode2D.Impulse);
@@ -272,12 +286,14 @@ public class Personnage : MonoBehaviour
 
     private void Shoot(Vector2 direction)
     {
+        // Si il ne vise nul
         if (direction == Vector2.zero || Time.time - lastShotTime < 0.8f)
             return;
-        
+
         audioSource.PlayOneShot(clipShoot);
 
-        var bullet = Instantiate(prefabBullet, transform.position, Quaternion.identity).GetComponent<Bullet>();
+        var bullet = Instantiate(prefabBullet, transform.position, Quaternion.identity)
+            .GetComponent<Bullet>();
 
         bullet.SetAttributes(direction, transform.position, this);
 
@@ -292,13 +308,29 @@ public class Personnage : MonoBehaviour
 
     private bool IsGrounded()
     {
+        // TODO peut etre faire une box a la place d'une ligne
+
         // Fait une ligne en dessous des pieds et regarde si elle est en contact avec le sol
         var hit = Physics2D.Raycast(
-            new Vector2(transform.position.x + feetPosition.x, transform.position.y + feetPosition.y), Vector2.right,
-            feetWidth, LayerMask.GetMask("Ground"));
+            new Vector2(
+                transform.position.x + feetPosition.x,
+                transform.position.y + feetPosition.y
+            ),
+            Vector2.right,
+            feetWidth,
+            LayerMask.GetMask("Ground")
+        );
 
         // Hitbox de pieds pour isgrounded DEBUG
-        //Debug.DrawRay(new Vector3(transform.position.x + feetPosition.x, transform.position.y + feetPosition.y), Vector3.right * feetWidth, Color.red, 5f);
+        Debug.DrawRay(
+            new Vector3(
+                transform.position.x + feetPosition.x,
+                transform.position.y + feetPosition.y
+            ),
+            Vector3.right * feetWidth,
+            Color.red,
+            5f
+        );
 
         return hit;
     }

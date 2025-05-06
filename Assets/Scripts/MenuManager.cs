@@ -62,6 +62,7 @@ public class MenuManager : MonoBehaviour
 
     private void LoadCharacterSelectionMenu()
     {
+        // Tous les boutons de tetes de joueurs
         allCharacterButtons = player1Characters.Concat(player2Characters).ToList();
 
         mainMenu.SetActive(false);

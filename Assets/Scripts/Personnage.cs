@@ -31,11 +31,11 @@ public class Personnage : MonoBehaviour
 
     #region Movement Variables
 
-    private float vitesse;
+    private float speed;
     private float jumpForce;
     private float dashForce;
 
-    private Vector2 mouvement;
+    private Vector2 movement;
 
     private int numberJumps;
     private bool canJumpWithStick;
@@ -100,7 +100,7 @@ public class Personnage : MonoBehaviour
     // Set les attributs de début de partie
     private void SetAttributes()
     {
-        vitesse = 20f;
+        speed = 20f;
         jumpForce = 35f;
         dashForce = 30f;
 
@@ -117,7 +117,7 @@ public class Personnage : MonoBehaviour
         numberJumps = 0;
         canJumpWithStick = true;
         wantsToShoot = false;
-        mouvement = Vector2.zero;
+        movement = Vector2.zero;
         rb.velocity = Vector2.zero;
         damage = 0f;
     }
@@ -190,7 +190,7 @@ public class Personnage : MonoBehaviour
             animator.SetBool("isWalking", false);
         }
 
-        mouvement = direction;
+        movement = direction;
     }
 
     private void Jump()
@@ -204,7 +204,7 @@ public class Personnage : MonoBehaviour
         // Applique la force au rigidbody pour sauter, reset le mouvement en Y mais pas celui en X
         rb.velocity = new Vector2(rb.velocity.x, 0);
         // Sauter avec un petit boost vers l'endroit ou il veut aller
-        rb.AddForce((Vector2.up + mouvement * 0.1f).normalized * jumpForce, ForceMode2D.Impulse);
+        rb.AddForce((Vector2.up + movement * 0.1f).normalized * jumpForce, ForceMode2D.Impulse);
     }
 
     private void Dash()
@@ -216,21 +216,21 @@ public class Personnage : MonoBehaviour
 
         // Donner une force vers ou on veut aller
         Vector2 direction = sr.flipX ? Vector2.left : Vector2.right;
-        rb.AddForce((direction + mouvement * 0.1f).normalized * dashForce, ForceMode2D.Impulse);
+        rb.AddForce((direction + movement * 0.1f).normalized * dashForce, ForceMode2D.Impulse);
 
         lastDashTime = Time.time;
     }
 
     private void MoveCharacter()
     {
-        transform.Translate(mouvement * (vitesse * Time.fixedDeltaTime));
+        transform.Translate(movement * (speed * Time.fixedDeltaTime));
     }
 
     // Avoir plus de facilité à contrer la vélocité
     private void AddDirectionalMomentum()
     {
-        if ((mouvement.x > 0 && rb.velocity.x < 0) || (mouvement.x < 0 && rb.velocity.x > 0))
-            rb.velocity += new Vector2(mouvement.x * vitesse * Time.fixedDeltaTime * 5f, 0);
+        if ((movement.x > 0 && rb.velocity.x < 0) || (movement.x < 0 && rb.velocity.x > 0))
+            rb.velocity += new Vector2(movement.x * speed * Time.fixedDeltaTime * 5f, 0);
     }
 
     #endregion

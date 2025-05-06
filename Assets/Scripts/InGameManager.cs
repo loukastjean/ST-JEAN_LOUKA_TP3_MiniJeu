@@ -160,14 +160,17 @@ public class InGameManager : MonoBehaviour
         }
 
         btnMainMenu.onClick.AddListener(ReloadScene);
+        
+        btnMainMenu.Select();
     }
 
     private void ReloadScene()
     {
-        // Rejoue la scene du jeu pour revenir au menu principal
+        // Empeche les joueurs de bouger apres la fin de la partie, afin qu'ils puissent selectionner le bouton Menu Principal
         player1.RemoveInputs();
         player2.RemoveInputs();
         
+        // Rejoue la scene du jeu pour revenir au menu principal
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 

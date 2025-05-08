@@ -63,10 +63,7 @@ public class InGameManager : MonoBehaviour
         player1 = _player1;
         player2 = _player2;
 
-        if (!InputSchemeAssigner.isInitialized)
-        {
-            InputSchemeAssigner.AssignSchemes();
-        }
+        InputSchemeAssigner.AssignSchemes();
 
         player1.Creation();
         player2.Creation();

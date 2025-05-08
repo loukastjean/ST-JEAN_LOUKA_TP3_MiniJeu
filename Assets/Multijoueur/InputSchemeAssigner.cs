@@ -21,12 +21,6 @@ public static class InputSchemeAssigner
     /// <param name="invertPlayers">Inverse le joueur de gauche et de droite</param>
     public static void AssignSchemes(bool invertPlayers = false)
     {
-        if (isInitialized)
-        { 
-            Debug.LogWarning("Le InputSchemeAssigner a déjà été initialisé!");
-            //return;
-        }
-
         // Assigner les valeurs
         playerCount = PlayerInput.all.Count;
         gamePadCount = Gamepad.all.Count;

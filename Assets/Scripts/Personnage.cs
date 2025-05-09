@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class Personnage : MonoBehaviour
@@ -6,6 +7,8 @@ public class Personnage : MonoBehaviour
 
     [SerializeField] private GameObject prefabBullet;
     [SerializeField] private AudioClip clipWalk, clipLand, clipJump, clipDash, clipShoot, clipHurt;
+
+    [SerializeField] private Vector2 vectorChose;
 
     #endregion
 
@@ -274,7 +277,6 @@ public class Personnage : MonoBehaviour
     {
         if (collisionInfo.gameObject.layer == LayerMask.NameToLayer("Platforms"))
         {
-            
             // Dessine une ligne sous les pieds du personnage et regarde si ca entre en contact avec le sol
             var hitPlatform = Physics2D.Raycast(
                 new Vector2(transform.position.x, transform.position.y + feetPosition.y),
@@ -298,6 +300,14 @@ public class Personnage : MonoBehaviour
         }
     }
 
+
+    private void OnDrawGizmos()
+    {
+        vectorChose = rb.worldCenterOfMass;
+        Gizmos.DrawWireCube(new Vector2(transform.position.x, transform.position.y + feetPosition.y / 2), GetComponent<Collider2D>().bounds.max);
+    }
+
+
     void HandlePlatforms()
     {
         // Change la layer en fonction de si il est dans une platforme
@@ -307,7 +317,7 @@ public class Personnage : MonoBehaviour
 
     bool IsInPlatform()
     {
-        // Dessine une ligne sous les pieds du personnage et regarde si ca entre en contact avec le sol
+        // Dessine une ligne qui passe a travers le personnage et regarde si elle touche une plateforme 
         var hitPlatform = Physics2D.Raycast(
             new Vector2(transform.position.x, transform.position.y + feetPosition.y),
             Vector2.up,

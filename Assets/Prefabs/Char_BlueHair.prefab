@@ -18,7 +18,7 @@ GameObject:
   - component: {fileID: 8790731110072120833}
   - component: {fileID: 8040555059587623211}
   - component: {fileID: 3768293573713696584}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Char_BlueHair
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -62,7 +62,7 @@ Rigidbody2D:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 768
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 1
@@ -159,6 +159,7 @@ MonoBehaviour:
   clipDash: {fileID: 8300000, guid: 40d66277887a5cc448aadff1186fb370, type: 3}
   clipShoot: {fileID: 8300000, guid: 615a267d1a9be9e409c69631eb8344c5, type: 3}
   clipHurt: {fileID: 8300000, guid: b6499b19651e59446b9636606f63fbf1, type: 3}
+  choseHeight: 0
   lineRenderer: {fileID: 0}
   sr: {fileID: 0}
   aim: {x: 0, y: 0}

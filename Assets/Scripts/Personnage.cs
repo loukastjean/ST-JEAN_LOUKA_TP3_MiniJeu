@@ -63,6 +63,7 @@ public class Personnage : MonoBehaviour
         UpdateLineRenderer();
         HandleShooting();
         HandleGrounding();
+        HandlePlatforms();
     }
 
     private void FixedUpdate()
@@ -268,6 +269,61 @@ public class Personnage : MonoBehaviour
     #endregion
 
     #region Utility
+    
+    void OnCollisionEnter2D(Collision2D collisionInfo)
+    {
+        if (collisionInfo.gameObject.layer == LayerMask.NameToLayer("Platforms"))
+        {
+            
+            // Dessine une ligne sous les pieds du personnage et regarde si ca entre en contact avec le sol
+            var hitPlatform = Physics2D.Raycast(
+                new Vector2(transform.position.x, transform.position.y + feetPosition.y),
+                Vector2.up,
+                4f,
+                LayerMask.GetMask("Platforms")
+            );
+            
+            Debug.DrawRay(
+                new Vector3(transform.position.x, transform.position.y + feetPosition.y),
+                Vector2.up * 4f,
+                Color.green,
+                2f
+            ); // DEBUG // TODO
+
+            if (hitPlatform)
+            {
+                Debug.Log("PlayersThroughPlatforms");
+                gameObject.layer = LayerMask.NameToLayer("PlayersThroughPlatforms");
+            }
+        }
+    }
+
+    void HandlePlatforms()
+    {
+        // Change la layer en fonction de si il est dans une platforme
+        gameObject.layer = IsInPlatform() ? LayerMask.NameToLayer("PlayersThroughPlatforms") : LayerMask.NameToLayer("Players");
+    }
+    
+
+    bool IsInPlatform()
+    {
+        // Dessine une ligne sous les pieds du personnage et regarde si ca entre en contact avec le sol
+        var hitPlatform = Physics2D.Raycast(
+            new Vector2(transform.position.x, transform.position.y + feetPosition.y),
+            Vector2.up,
+            4f,
+            LayerMask.GetMask("Platforms")
+        );
+            
+        Debug.DrawRay(
+            new Vector3(transform.position.x, transform.position.y + feetPosition.y),
+            Vector2.up * 4f,
+            Color.green,
+            2f
+        ); // DEBUG // TODO
+
+        return hitPlatform;
+    }
 
     private void HandleOutOfBounds()
     {
@@ -316,27 +372,35 @@ public class Personnage : MonoBehaviour
         // TODO: Avoir une boite au lieu d'une ligne
         
         // Dessine une ligne sous les pieds du personnage et regarde si ca entre en contact avec le sol
-        var hit = Physics2D.Raycast(
+        var hitGround = Physics2D.Raycast(
             new Vector2(transform.position.x + feetPosition.x, transform.position.y + feetPosition.y),
             Vector2.right,
             feetWidth,
             LayerMask.GetMask("Ground")
+        );
+        
+        // Dessine une ligne sous les pieds du personnage et regarde si ca entre en contact avec le sol
+        var hitPlatform = Physics2D.Raycast(
+            new Vector2(transform.position.x + feetPosition.x, transform.position.y + feetPosition.y),
+            Vector2.right,
+            feetWidth,
+            LayerMask.GetMask("Platforms")
         );
 
         Debug.DrawRay(
             new Vector3(transform.position.x + feetPosition.x, transform.position.y + feetPosition.y),
             Vector3.right * feetWidth,
             Color.red,
-            5f
+            2f
         ); // DEBUG // TODO
-
-        return hit;
+        
+        return hitGround || hitPlatform;
     }
 
     private bool ExitedField()
     {
         // Les limites du terrain
-        return Mathf.Abs(transform.position.x) > 70f || transform.position.y < -30f;
+        return Mathf.Abs(transform.position.x) > 70f || Mathf.Abs(transform.position.y) > 30f;
     }
 
     private void Respawn()

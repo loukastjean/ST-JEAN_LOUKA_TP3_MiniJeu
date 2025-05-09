@@ -18,7 +18,7 @@ GameObject:
   - component: {fileID: 8790731110072120833}
   - component: {fileID: 3103316733139043571}
   - component: {fileID: 6721217346659364453}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Char_NoHair
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -62,7 +62,7 @@ Rigidbody2D:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 768
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 1

@@ -53,12 +53,12 @@ public class MusicPlayer : MonoBehaviour
     // Retourne un clip audio random dans les availableaudios
     private AudioClip GetRandomClip()
     {
-        int index = Random.Range(0, availableClips.Count);
-        AudioClip clip = availableClips[index];
+        var index = Random.Range(0, availableClips.Count);
+        var clip = availableClips[index];
         availableClips.RemoveAt(index);
         return clip;
     }
-    
+
     private void ResetAvailableClips()
     {
         availableClips = allClips.ToList();

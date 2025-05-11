@@ -1,8 +1,21 @@
-using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Personnage : MonoBehaviour
 {
+    #region Destruction
+
+    public void RemoveInputs()
+    {
+        inputReader.LS_m.callback -= LS_moved;
+        inputReader.RT.callback -= RT_moved;
+        inputReader.BE.callback -= BE_onClicked;
+        inputReader.RS_m.callback -= RS_moved;
+        inputReader.Menu.callback -= Menu_OnClicked;
+    }
+
+    #endregion
+
     #region Serialized Fields
 
     [SerializeField] private GameObject prefabBullet;
@@ -46,7 +59,7 @@ public class Personnage : MonoBehaviour
     private bool wantsToShoot;
 
     private float lastDashTime;
-    private float lastShotTime;
+    private float lastAttackTime;
 
     #endregion
 
@@ -97,6 +110,7 @@ public class Personnage : MonoBehaviour
         inputReader.LS_m.callback += LS_moved;
         inputReader.RT.callback += RT_moved;
         inputReader.BE.callback += BE_onClicked;
+        inputReader.BN.callback += BN_onClicked;
         inputReader.RS_m.callback += RS_moved;
         inputReader.Menu.callback += Menu_OnClicked;
     }
@@ -117,7 +131,7 @@ public class Personnage : MonoBehaviour
     private void SpawnAttributes()
     {
         lastDashTime = -99f;
-        lastShotTime = -99f;
+        lastAttackTime = -99f;
         numberJumps = 0;
         canJumpWithStick = true;
         wantsToShoot = false;
@@ -127,36 +141,44 @@ public class Personnage : MonoBehaviour
     }
 
     #endregion
-    
-    #region Destruction
-    
-    public void RemoveInputs()
-    {
-        inputReader.LS_m.callback -= LS_moved;
-        inputReader.RT.callback -= RT_moved;
-        inputReader.BE.callback -= BE_onClicked;
-        inputReader.RS_m.callback -= RS_moved;
-        inputReader.Menu.callback -= Menu_OnClicked;
-    }
-    
-    #endregion
 
     #region Input Callbacks
 
     // Left stick / WASD
-    private void LS_moved(Vector2 direction) { Move(direction); }
+    private void LS_moved(Vector2 direction)
+    {
+        Move(direction);
+    }
 
     // Right stick / NOTHING
-    private void RS_moved(Vector2 direction) { if (direction.magnitude > 0.1f) aim = direction; }
+    private void RS_moved(Vector2 direction)
+    {
+        if (direction.magnitude > 0.1f) aim = direction;
+    }
 
     // Right trigger / NOTHING
-    private void RT_moved(float press) { wantsToShoot = press > 0.4f; }
+    private void RT_moved(float press)
+    {
+        wantsToShoot = press > 0.4f;
+    }
 
     // Button east / E
-    private void BE_onClicked() { Dash(); }
+    private void BE_onClicked()
+    {
+        Dash();
+    }
+
+    // Button north / S
+    private void BN_onClicked()
+    {
+        Roll();
+    }
 
     // Menu / P
-    private void Menu_OnClicked() { ingameManager.Pause(); }
+    private void Menu_OnClicked()
+    {
+        ingameManager.Pause();
+    }
 
     #endregion
 
@@ -219,7 +241,7 @@ public class Personnage : MonoBehaviour
         audioSource.PlayOneShot(clipDash);
 
         // Donner une force vers ou on veut aller
-        Vector2 direction = sr.flipX ? Vector2.left : Vector2.right;
+        var direction = sr.flipX ? Vector2.left : Vector2.right;
         rb.AddForce((direction + movement * 0.1f).normalized * dashForce, ForceMode2D.Impulse);
 
         lastDashTime = Time.time;
@@ -244,7 +266,7 @@ public class Personnage : MonoBehaviour
     private void Shoot()
     {
         // Empecher de tirer trop rapidement
-        if (Time.time - lastShotTime < 0.8f) return;
+        if (Time.time - lastAttackTime < 0.8f) return;
 
         audioSource.PlayOneShot(clipShoot);
 
@@ -253,27 +275,63 @@ public class Personnage : MonoBehaviour
 
         bullet.SetAttributes(aim, rb.worldCenterOfMass, this);
 
-        lastShotTime = Time.time;
+        lastAttackTime = Time.time;
     }
 
-    public void SubirDegats(float degats, Vector2 direction)
+    private void Roll()
     {
-        damage += degats;
+        // Empecher de tirer trop rapidement
+        if (Time.time - lastAttackTime < 0.8f) return;
+
+        //audioSource.PlayOneShot(); // TODO ajoute son pour attaque
+
+        // Afflige du dommage et du knockback sur tous les ennemis qui sont dans le 
+        foreach (var enemy in GetEnemiesInRange()) enemy.TakeDamage(damage * 2, movement);
+
+        animator.SetTrigger("roll");
+
+        lastAttackTime = Time.time;
+    }
+
+    public void TakeDamage(float _damage, Vector2 direction)
+    {
+        damage += _damage;
+
+        direction = direction.normalized;
 
         // Donner plus de recul quand on est sur le sol, car la friction fait que le projectile impacte moins
         if (direction.y < 0f && IsGrounded()) direction.x *= 2f;
 
         audioSource.PlayOneShot(clipHurt);
+        
+        // TODO DEBUG
+        Debug.Log("OUCH");
 
         // Inflige une force dans le meme sens que la trajectoire du projectile
-        rb.AddForce(direction.normalized * (damage / 3 + 40f), ForceMode2D.Impulse);
+        rb.AddForce(direction * (damage / 3 + 40f), ForceMode2D.Impulse);
     }
 
     #endregion
 
     #region Utility
-    
-    void OnCollisionEnter2D(Collision2D collisionInfo)
+
+    // Recupere les ennemis qui touche au projectile
+    private List<Personnage> GetEnemiesInRange()
+    {
+        var enemies = new List<Personnage>();
+
+        // Donne un peu de range a l'attaque
+        var radius = GetComponent<Collider2D>().bounds.extents.y;
+        var colliders = Physics2D.OverlapCircleAll(transform.position, radius);
+
+        foreach (var col in colliders)
+            if (col.TryGetComponent(out Personnage character) && character != this)
+                enemies.Add(character);
+
+        return enemies;
+    }
+
+    private void OnCollisionEnter2D(Collision2D collisionInfo)
     {
         if (collisionInfo.gameObject.layer == LayerMask.NameToLayer("Platforms"))
         {
@@ -284,7 +342,7 @@ public class Personnage : MonoBehaviour
                 4f,
                 LayerMask.GetMask("Platforms")
             );
-            
+
             Debug.DrawRay(
                 new Vector3(transform.position.x, transform.position.y + feetPosition.y),
                 Vector2.up * 4f,
@@ -303,19 +361,21 @@ public class Personnage : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        vectorChose = rb.worldCenterOfMass;
-        Gizmos.DrawWireCube(new Vector2(transform.position.x, transform.position.y + feetPosition.y / 2), GetComponent<Collider2D>().bounds.max);
+        Gizmos.DrawWireCube(new Vector2(transform.position.x, transform.position.y + feetPosition.y / 2),
+            GetComponent<Collider2D>().bounds.max);
     }
 
 
-    void HandlePlatforms()
+    private void HandlePlatforms()
     {
         // Change la layer en fonction de si il est dans une platforme
-        gameObject.layer = IsInPlatform() ? LayerMask.NameToLayer("PlayersThroughPlatforms") : LayerMask.NameToLayer("Players");
+        gameObject.layer = IsInPlatform()
+            ? LayerMask.NameToLayer("PlayersThroughPlatforms")
+            : LayerMask.NameToLayer("Players");
     }
-    
 
-    bool IsInPlatform()
+
+    private bool IsInPlatform()
     {
         // Dessine une ligne qui passe a travers le personnage et regarde si elle touche une plateforme 
         var hitPlatform = Physics2D.Raycast(
@@ -324,7 +384,7 @@ public class Personnage : MonoBehaviour
             4f,
             LayerMask.GetMask("Platforms")
         );
-            
+
         Debug.DrawRay(
             new Vector3(transform.position.x, transform.position.y + feetPosition.y),
             Vector2.up * 4f,
@@ -348,7 +408,7 @@ public class Personnage : MonoBehaviour
         lineRenderer.SetPosition(0, rb.worldCenterOfMass);
         lineRenderer.SetPosition(1, rb.worldCenterOfMass + new Vector2(aim.x, aim.y).normalized * 100f);
     }
-    
+
     private void HandleShooting()
     {
         if (wantsToShoot)
@@ -380,7 +440,7 @@ public class Personnage : MonoBehaviour
     private bool IsGrounded()
     {
         // TODO: Avoir une boite au lieu d'une ligne
-        
+
         // Dessine une ligne sous les pieds du personnage et regarde si ca entre en contact avec le sol
         var hitGround = Physics2D.Raycast(
             new Vector2(transform.position.x + feetPosition.x, transform.position.y + feetPosition.y),
@@ -388,7 +448,7 @@ public class Personnage : MonoBehaviour
             feetWidth,
             LayerMask.GetMask("Ground")
         );
-        
+
         // Dessine une ligne sous les pieds du personnage et regarde si ca entre en contact avec le sol
         var hitPlatform = Physics2D.Raycast(
             new Vector2(transform.position.x + feetPosition.x, transform.position.y + feetPosition.y),
@@ -403,7 +463,7 @@ public class Personnage : MonoBehaviour
             Color.red,
             2f
         ); // DEBUG // TODO
-        
+
         return hitGround || hitPlatform;
     }
 

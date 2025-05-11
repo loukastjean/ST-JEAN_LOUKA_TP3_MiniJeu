@@ -4,11 +4,26 @@ using UnityEngine;
 public class Bullet : MonoBehaviour
 {
     private Personnage creator;
+    private float damage;
     private Vector2 movement;
+    private float speed;
 
     private SpriteRenderer spriteRenderer;
-    private float speed;
-    private float damage;
+
+    #region Initialization
+
+    // Set les variables importantes du projectile quand il est créé
+    public void SetAttributes(Vector2 direction, Vector2 origin, Personnage shooter)
+    {
+        transform.position = origin;
+        movement = direction.normalized;
+
+        speed = 40f;
+        damage = 10f;
+        creator = shooter;
+    }
+
+    #endregion
 
     #region Unity Methods
 
@@ -35,27 +50,12 @@ public class Bullet : MonoBehaviour
 
     #endregion
 
-    #region Initialization
-
-    // Set les variables importantes du projectile quand il est créé
-    public void SetAttributes(Vector2 direction, Vector2 origin, Personnage shooter)
-    {
-        transform.position = origin;
-        movement = direction.normalized;
-
-        speed = 40f;
-        damage = 10f;
-        creator = shooter;
-    }
-
-    #endregion
-
     #region Logic
 
     // Fait bouger le projectile à une vitesse constante
     private void Move()
     {
-        transform.Translate(movement * speed * Time.fixedDeltaTime);
+        transform.Translate(movement * (speed * Time.fixedDeltaTime));
     }
 
     // Verifie si le projectile touche a un ennemi
@@ -67,10 +67,7 @@ public class Bullet : MonoBehaviour
     // Inflige les degats quand le projectile touche un ennemi
     private void HandleImpact()
     {
-        foreach (var enemy in GetEnemiesInRange())
-        {
-            enemy.SubirDegats(damage, movement);
-        }
+        foreach (var enemy in GetEnemiesInRange()) enemy.TakeDamage(damage, movement);
 
         Destroy(gameObject);
     }
@@ -94,12 +91,8 @@ public class Bullet : MonoBehaviour
         var colliders = Physics2D.OverlapCircleAll(transform.position, radius);
 
         foreach (var col in colliders)
-        {
             if (col.TryGetComponent(out Personnage character) && character != creator)
-            {
                 enemies.Add(character);
-            }
-        }
 
         return enemies;
     }
@@ -107,7 +100,7 @@ public class Bullet : MonoBehaviour
     // Si le projectile est entre en contact avec le sol
     private bool HasHitGround()
     {
-        float radius = spriteRenderer.bounds.extents.x;
+        var radius = spriteRenderer.bounds.extents.x;
         var groundHits = Physics2D.OverlapCircleAll(transform.position, radius, LayerMask.GetMask("Ground"));
 
         return groundHits.Length > 0;

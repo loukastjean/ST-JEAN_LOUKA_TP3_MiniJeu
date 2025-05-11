@@ -2,12 +2,13 @@ using UnityEngine;
 
 public class CameraManager : MonoBehaviour
 {
-    [Header("References")]
-    [SerializeField] private GameObject inGameMenu;
+    [Header("References")] [SerializeField]
+    private GameObject inGameMenu;
+
+    private readonly float cameraSpeed = 5f;
+    private bool hasJustAppeared = true;
 
     private Personnage[] players;
-    private float cameraSpeed = 5f;
-    private bool hasJustAppeared = true;
 
     #region Unity Methods
 
@@ -53,21 +54,17 @@ public class CameraManager : MonoBehaviour
         Vector3 targetPosition = new(midpoint.x, midpoint.y, transform.position.z);
 
         // Trouve le mouvement que la caméra doit faire pour arriver entre les joueurs
-        Vector3 offset = targetPosition - transform.position;
+        var offset = targetPosition - transform.position;
 
         // Bouge en X pour arriver au point, et fait sur que la caméra ne dépasse pas ses limites
         if ((offset.x < 0 && transform.position.x > -15f) ||
             (offset.x > 0 && transform.position.x < 15f))
-        {
             transform.position += new Vector3(offset.x, 0, 0) * (cameraSpeed * Time.fixedDeltaTime);
-        }
 
         // Bouge en Y pour arriver au point, et fait sur que la caméra ne dépasse pas ses limites
         if ((offset.y < 0 && transform.position.y > -10f) ||
             (offset.y > 0 && transform.position.y < 5f))
-        {
             transform.position += new Vector3(0, offset.y, 0) * (cameraSpeed * Time.fixedDeltaTime);
-        }
     }
 
     #endregion

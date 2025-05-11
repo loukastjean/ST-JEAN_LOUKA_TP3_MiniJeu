@@ -21,8 +21,6 @@ public class Personnage : MonoBehaviour
     [SerializeField] private GameObject prefabBullet;
     [SerializeField] private AudioClip clipWalk, clipLand, clipJump, clipDash, clipShoot, clipHurt;
 
-    [SerializeField] private Vector2 vectorChose;
-
     #endregion
 
     #region Components
@@ -270,7 +268,7 @@ public class Personnage : MonoBehaviour
 
         audioSource.PlayOneShot(clipShoot);
 
-        var bullet = Instantiate(prefabBullet, rb.worldCenterOfMass, Quaternion.identity)
+        var bullet = Instantiate(prefabBullet, GetComponent<Collider2D>().bounds.center, Quaternion.identity)
             .GetComponent<Bullet>();
 
         bullet.SetAttributes(aim, rb.worldCenterOfMass, this);
@@ -285,27 +283,30 @@ public class Personnage : MonoBehaviour
 
         //audioSource.PlayOneShot(); // TODO ajoute son pour attaque
 
-        // Afflige du dommage et du knockback sur tous les ennemis qui sont dans le 
-        foreach (var enemy in GetEnemiesInRange()) enemy.TakeDamage(damage * 2, movement);
+        // Afflige du dommage et du knockback sur tous les ennemis qui sont dans le rayon d'attaque
+        foreach (var enemy in GetEnemiesInRange())
+        {
+            Vector2 differenceBetweenPlayers = enemy.transform.position - transform.position;
+            enemy.TakeDamage(20f, differenceBetweenPlayers);
+            Debug.Log(enemy.damage);
+        }
+
 
         animator.SetTrigger("roll");
 
         lastAttackTime = Time.time;
     }
 
-    public void TakeDamage(float _damage, Vector2 direction)
+    public void TakeDamage(float damage, Vector2 direction)
     {
-        damage += _damage;
+        this.damage += damage;
 
         direction = direction.normalized;
 
         // Donner plus de recul quand on est sur le sol, car la friction fait que le projectile impacte moins
-        if (direction.y < 0f && IsGrounded()) direction.x *= 2f;
+        if (direction.y < 0f && IsGrounded()) direction.x *= 1.2f;
 
         audioSource.PlayOneShot(clipHurt);
-        
-        // TODO DEBUG
-        Debug.Log("OUCH");
 
         // Inflige une force dans le meme sens que la trajectoire du projectile
         rb.AddForce(direction * (damage / 3 + 40f), ForceMode2D.Impulse);
@@ -321,7 +322,8 @@ public class Personnage : MonoBehaviour
         var enemies = new List<Personnage>();
 
         // Donne un peu de range a l'attaque
-        var radius = GetComponent<Collider2D>().bounds.extents.y;
+        Debug.Log(GetComponent<Collider2D>().bounds.extents);
+        var radius = GetComponent<Collider2D>().bounds.extents.x * 3f;
         var colliders = Physics2D.OverlapCircleAll(transform.position, radius);
 
         foreach (var col in colliders)
@@ -361,8 +363,7 @@ public class Personnage : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        Gizmos.DrawWireCube(new Vector2(transform.position.x, transform.position.y + feetPosition.y / 2),
-            GetComponent<Collider2D>().bounds.max);
+        Gizmos.DrawWireCube(GetComponent<Collider2D>().bounds.center, GetComponent<Collider2D>().bounds.extents);
     }
 
 

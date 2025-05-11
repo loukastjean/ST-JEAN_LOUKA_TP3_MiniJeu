@@ -35,7 +35,7 @@ public class Bullet : MonoBehaviour
     private void Update()
     {
         // Si il frappe un ennemi
-        if (HasHitEnemy())
+        if (HasHitEnemy() || HasHitGround())
             HandleImpact();
 
         // Si il a depasse les limites

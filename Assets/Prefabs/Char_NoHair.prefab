@@ -159,6 +159,7 @@ MonoBehaviour:
   clipDash: {fileID: 8300000, guid: 40d66277887a5cc448aadff1186fb370, type: 3}
   clipShoot: {fileID: 8300000, guid: 615a267d1a9be9e409c69631eb8344c5, type: 3}
   clipHurt: {fileID: 8300000, guid: b6499b19651e59446b9636606f63fbf1, type: 3}
+  clipRollHit: {fileID: 8300000, guid: b6438e9706e244dabb690744bc020b61, type: 3}
   lineRenderer: {fileID: 0}
   sr: {fileID: 0}
   aim: {x: 0, y: 0}

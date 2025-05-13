@@ -3,6 +3,12 @@ using UnityEngine;
 
 public class Personnage : MonoBehaviour
 {
+    #region Constants
+
+    private readonly Vector2 respawnPosition = new(0, 10f);
+
+    #endregion
+
     #region Destruction
 
     public void RemoveInputs()
@@ -19,13 +25,14 @@ public class Personnage : MonoBehaviour
     #region Serialized Fields
 
     [SerializeField] private GameObject prefabBullet;
-    [SerializeField] private AudioClip clipWalk, clipLand, clipJump, clipDash, clipShoot, clipHurt;
+    [SerializeField] private AudioClip clipWalk, clipLand, clipJump, clipDash, clipShoot, clipHurt, clipRollHit;
 
     #endregion
 
     #region Components
 
     private Rigidbody2D rb;
+    private Collider2D coll;
     private Animator animator;
     private AudioSource audioSource;
     private PlayerInputReader inputReader;
@@ -61,14 +68,6 @@ public class Personnage : MonoBehaviour
 
     #endregion
 
-    #region Constants
-
-    private readonly Vector2 feetPosition = new(-0.75f, -2.56f);
-    private readonly float feetWidth = 1.5f;
-    private readonly Vector2 respawnPosition = new(0, 10f);
-
-    #endregion
-
     #region Unity
 
     private void Update()
@@ -94,6 +93,7 @@ public class Personnage : MonoBehaviour
     {
         inputReader = GetComponent<PlayerInputReader>();
         rb = GetComponent<Rigidbody2D>();
+        coll = GetComponent<Collider2D>();
         sr = GetComponent<SpriteRenderer>();
         animator = GetComponent<Animator>();
         ingameManager = FindObjectOfType<InGameManager>();
@@ -268,7 +268,7 @@ public class Personnage : MonoBehaviour
 
         audioSource.PlayOneShot(clipShoot);
 
-        var bullet = Instantiate(prefabBullet, GetComponent<Collider2D>().bounds.center, Quaternion.identity)
+        var bullet = Instantiate(prefabBullet, coll.bounds.center, Quaternion.identity)
             .GetComponent<Bullet>();
 
         bullet.SetAttributes(aim, rb.worldCenterOfMass, this);
@@ -281,15 +281,18 @@ public class Personnage : MonoBehaviour
         // Empecher de tirer trop rapidement
         if (Time.time - lastAttackTime < 0.8f) return;
 
-        //audioSource.PlayOneShot(); // TODO ajoute son pour attaque
+        var hit = false;
 
         // Afflige du dommage et du knockback sur tous les ennemis qui sont dans le rayon d'attaque
         foreach (var enemy in GetEnemiesInRange())
         {
+            hit = true;
             Vector2 differenceBetweenPlayers = enemy.transform.position - transform.position;
             enemy.TakeDamage(20f, differenceBetweenPlayers);
-            Debug.Log(enemy.damage);
         }
+
+        if (hit)
+            audioSource.PlayOneShot(clipRollHit);
 
 
         animator.SetTrigger("roll");
@@ -322,8 +325,7 @@ public class Personnage : MonoBehaviour
         var enemies = new List<Personnage>();
 
         // Donne un peu de range a l'attaque
-        Debug.Log(GetComponent<Collider2D>().bounds.extents);
-        var radius = GetComponent<Collider2D>().bounds.extents.x * 3f;
+        var radius = coll.bounds.extents.x * 3f;
         var colliders = Physics2D.OverlapCircleAll(transform.position, radius);
 
         foreach (var col in colliders)
@@ -332,40 +334,6 @@ public class Personnage : MonoBehaviour
 
         return enemies;
     }
-
-    private void OnCollisionEnter2D(Collision2D collisionInfo)
-    {
-        if (collisionInfo.gameObject.layer == LayerMask.NameToLayer("Platforms"))
-        {
-            // Dessine une ligne sous les pieds du personnage et regarde si ca entre en contact avec le sol
-            var hitPlatform = Physics2D.Raycast(
-                new Vector2(transform.position.x, transform.position.y + feetPosition.y),
-                Vector2.up,
-                4f,
-                LayerMask.GetMask("Platforms")
-            );
-
-            Debug.DrawRay(
-                new Vector3(transform.position.x, transform.position.y + feetPosition.y),
-                Vector2.up * 4f,
-                Color.green,
-                2f
-            ); // DEBUG // TODO
-
-            if (hitPlatform)
-            {
-                Debug.Log("PlayersThroughPlatforms");
-                gameObject.layer = LayerMask.NameToLayer("PlayersThroughPlatforms");
-            }
-        }
-    }
-
-
-    private void OnDrawGizmos()
-    {
-        Gizmos.DrawWireCube(GetComponent<Collider2D>().bounds.center, GetComponent<Collider2D>().bounds.extents);
-    }
-
 
     private void HandlePlatforms()
     {
@@ -379,21 +347,30 @@ public class Personnage : MonoBehaviour
     private bool IsInPlatform()
     {
         // Dessine une ligne qui passe a travers le personnage et regarde si elle touche une plateforme 
-        var hitPlatform = Physics2D.Raycast(
-            new Vector2(transform.position.x, transform.position.y + feetPosition.y),
+        var hitPlatformLeft = Physics2D.Raycast(
+            new Vector2(coll.bounds.center.x - coll.bounds.extents.x, coll.bounds.center.y),
             Vector2.up,
             4f,
             LayerMask.GetMask("Platforms")
         );
 
-        Debug.DrawRay(
-            new Vector3(transform.position.x, transform.position.y + feetPosition.y),
-            Vector2.up * 4f,
-            Color.green,
-            2f
-        ); // DEBUG // TODO
+        // Dessine une ligne qui passe a travers le personnage et regarde si elle touche une plateforme 
+        var hitPlatformCenter = Physics2D.Raycast(
+            new Vector2(coll.bounds.center.x, coll.bounds.center.y - coll.bounds.extents.y),
+            Vector2.up,
+            4f,
+            LayerMask.GetMask("Platforms")
+        );
 
-        return hitPlatform;
+        // Dessine une ligne qui passe a travers le personnage et regarde si elle touche une plateforme 
+        var hitPlatformRight = Physics2D.Raycast(
+            new Vector2(coll.bounds.center.x + coll.bounds.extents.x, coll.bounds.center.y - coll.bounds.extents.y),
+            Vector2.up,
+            4f,
+            LayerMask.GetMask("Platforms")
+        );
+
+        return hitPlatformLeft || hitPlatformCenter || hitPlatformRight;
     }
 
     private void HandleOutOfBounds()
@@ -440,32 +417,64 @@ public class Personnage : MonoBehaviour
 
     private bool IsGrounded()
     {
-        // TODO: Avoir une boite au lieu d'une ligne
+        var hasHitGround = false;
+        var hasHitPlatform = false;
 
-        // Dessine une ligne sous les pieds du personnage et regarde si ca entre en contact avec le sol
-        var hitGround = Physics2D.Raycast(
-            new Vector2(transform.position.x + feetPosition.x, transform.position.y + feetPosition.y),
-            Vector2.right,
-            feetWidth,
+        // Ligne qui passe a droite du personnage et regarde si est en collision avec le sol
+        var hitGroundRight = Physics2D.Raycast(
+            new Vector2(coll.bounds.center.x + coll.bounds.extents.x, coll.bounds.center.y),
+            Vector2.down,
+            1.1f,
             LayerMask.GetMask("Ground")
         );
 
-        // Dessine une ligne sous les pieds du personnage et regarde si ca entre en contact avec le sol
-        var hitPlatform = Physics2D.Raycast(
-            new Vector2(transform.position.x + feetPosition.x, transform.position.y + feetPosition.y),
-            Vector2.right,
-            feetWidth,
+        // Ligne qui passe au centre du personnage et regarde si est en collision avec le sol
+        var hitGroundCenter = Physics2D.Raycast(
+            new Vector2(coll.bounds.center.x, coll.bounds.center.y),
+            Vector2.down,
+            1.1f,
+            LayerMask.GetMask("Ground")
+        );
+
+        // Ligne qui passe a gauche du personnage et regarde si est en collision avec le sol
+        var hitGroundLeft = Physics2D.Raycast(
+            new Vector2(coll.bounds.center.x - coll.bounds.extents.x, coll.bounds.center.y),
+            Vector2.down,
+            1.1f,
+            LayerMask.GetMask("Ground")
+        );
+
+        if (hitGroundRight || hitGroundCenter || hitGroundLeft)
+            hasHitGround = true;
+
+        // Ligne qui passe a droite du personnage et regarde si est en collision avec une plateforme au dessus
+        var hitPlatformRight = Physics2D.Raycast(
+            new Vector2(coll.bounds.center.x + coll.bounds.extents.x, coll.bounds.center.y),
+            Vector2.down,
+            1.1f,
             LayerMask.GetMask("Platforms")
         );
 
-        Debug.DrawRay(
-            new Vector3(transform.position.x + feetPosition.x, transform.position.y + feetPosition.y),
-            Vector3.right * feetWidth,
-            Color.red,
-            2f
-        ); // DEBUG // TODO
+        // Ligne qui passe au milieu du personnage et regarde si est en collision avec une plateforme au dessus
+        var hitPlatformCenter = Physics2D.Raycast(
+            new Vector2(coll.bounds.center.x, coll.bounds.center.y),
+            Vector2.down,
+            1.1f,
+            LayerMask.GetMask("Platforms")
+        );
 
-        return hitGround || hitPlatform;
+        // Ligne qui passe a gauche du personnage et regarde si est en collision avec une plateforme au dessus
+        var hitPlatformLeft = Physics2D.Raycast(
+            new Vector2(coll.bounds.center.x - coll.bounds.extents.x, coll.bounds.center.y),
+            Vector2.down,
+            1.1f,
+            LayerMask.GetMask("Platforms")
+        );
+
+        if (hitPlatformRight || hitPlatformCenter || hitPlatformLeft)
+            hasHitPlatform = true;
+
+        return hasHitGround || hasHitPlatform;
     }
 
     private bool ExitedField()

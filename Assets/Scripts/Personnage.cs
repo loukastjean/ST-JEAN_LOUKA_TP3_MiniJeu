@@ -313,7 +313,7 @@ public class Personnage : MonoBehaviour
         audioSource.PlayOneShot(clipHurt);
 
         // Inflige une force dans le meme sens que la trajectoire du projectile
-        rb.AddForce(direction * (damage / 3 + 40f), ForceMode2D.Impulse);
+        rb.AddForce(direction * (this.damage / 3 + 40f), ForceMode2D.Impulse);
     }
 
     #endregion

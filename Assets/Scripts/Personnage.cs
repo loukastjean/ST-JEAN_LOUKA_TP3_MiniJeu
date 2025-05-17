@@ -16,6 +16,7 @@ public class Personnage : MonoBehaviour
         inputReader.LS_m.callback -= LS_moved;
         inputReader.RT.callback -= RT_moved;
         inputReader.BE.callback -= BE_onClicked;
+        inputReader.BN.callback -= BN_onClicked;
         inputReader.RS_m.callback -= RS_moved;
         inputReader.Menu.callback -= Menu_OnClicked;
     }

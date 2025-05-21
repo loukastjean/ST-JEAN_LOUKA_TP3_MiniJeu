@@ -119,7 +119,7 @@ public class Personnage : MonoBehaviour
     {
         speed = 20f;
         jumpForce = 35f;
-        dashForce = 30f;
+        dashForce = 25f;
 
         lives = 5;
 
@@ -241,7 +241,11 @@ public class Personnage : MonoBehaviour
 
         // Donner une force vers ou on veut aller
         var direction = sr.flipX ? Vector2.left : Vector2.right;
-        rb.AddForce((direction + movement * 0.1f).normalized * dashForce, ForceMode2D.Impulse);
+        
+        // Donner une impulsion vers le haut pour mieux recover, mais garde en memoire la velocite pour pas
+        // etre triste quand on saute avant
+        rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y > 0f ? rb.velocity.y : 0f);
+        rb.AddForce((new Vector2(direction.x + movement.x * 0.1f, 0).normalized + Vector2.up * 0.3f) * dashForce, ForceMode2D.Impulse);
 
         lastDashTime = Time.time;
     }

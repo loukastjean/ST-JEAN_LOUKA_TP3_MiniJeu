@@ -1,15 +1,46 @@
-# ST-JEAN_LOUKA_TP3_MiniJeu
+# 🧊 Bataille de bonhommes
 
-Stickman Game TP3
+> **Jeu PvP 2D de plateformes** — Faites tomber votre adversaire de l’arène cinq fois pour remporter la victoire!
 
-2 Stickmen qui s’attaquent avec des armes sur des plateformes qui sont comme dans SSBU. Genre grosse plateforme en bas et 3 en forme de pyramide.
-Ils s’attaquent avec des guns.
-Quand ils se font frapper par les projectiles ils reçoivent du knockback.
-Les deux bonhommes bougent rapidement.
-Ils peuvent sauter 2 fois.
-Plus ils sont endommagés, plus ils ont du knockback quand ils se font frapper.
-Ils ont 5 vies chaque.
-Quand ils sont éjectés du stage, ils perdent une vie.
+---
 
-Voici le lien vers le plan Miro:
-https://miro.com/app/board/uXjVIDjqP1U=/?share_link_id=237772803973
+## 🕹️ Présentation
+
+**Bataille de bonhommes** est un jeu de combat compétitif sur plateformes en 2D, conçu dans un cadre éducatif. Deux joueurs s'affrontent dans une arène flottante en utilisant des attaques, des roulades, des bonds et des tirs pour éjecter l’adversaire hors du terrain. Le premier à faire tomber l’autre cinq fois gagne la partie.
+
+---
+
+## 📷 Captures d’écran
+
+| Gameplay | Menu | Game Over |
+|---------|------|--------|
+| ![screenshot1](./Images/capture_1.png) | ![screenshot2](./Images/capture_4.png) | ![screenshot3](./Images/capture_5.png) |
+
+---
+
+## 🎮 Contrôles
+
+**Manette uniquement :**
+
+- 🎮 **Joystick gauche** : Déplacement
+- 🕹️ **Joystick gauche (haut)** : Sauter
+- 🎯 **Joystick droit** : Viser
+- 🔫 **Gâchette droite** : Tirer
+- 🔄 **Bouton haut** : Roulade
+- ⚡ **Bouton droite** : Fonce/charge
+
+---
+
+## ⚙️ Installation & Lancement
+
+### WebGL (version jouable)
+
+Le jeu peut être joué directement dans un navigateur compatible à l'adresse suivante :  
+👉 [Jouer maintenant](https://pvcat.ca)
+
+### Localement (Unity)
+
+1. Cloner le dépôt :
+   ```
+   git clone https://github.com/votre-utilisateur/bataille-de-bonhommes.git
+   ```
